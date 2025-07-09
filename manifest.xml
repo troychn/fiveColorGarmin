@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
     <iq:application 
-        entry="FiveElementWatchFaceApp" 
+        entry="FiveColorApp" 
         id="759CF094397948C7AF4691554FEBB9DF" 
         launcherIcon="@Drawables.LauncherIcon" 
         minSdkVersion="4.0.0" 
