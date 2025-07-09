@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<strings>
+    <!-- Application Basic Information -->
+    <string id="AppName">FiveColorFace</string>
+    <string id="AppDescription">Smart color-matching watch face based on traditional Chinese Five Elements theory</string>
+    
+    <!-- Five Elements -->
+    <string id="ElementWood">Wood</string>
+    <string id="ElementFire">Fire</string>
+    <string id="ElementEarth">Earth</string>
+    <string id="ElementMetal">Metal</string>
+    <string id="ElementWater">Water</string>
+    
+    <!-- Element Descriptions -->
+    <string id="WoodDescription">Vibrant and energetic, perfect for exercise</string>
+    <string id="FireDescription">Passionate and energetic, full of vitality</string>
+    <string id="EarthDescription">Stable and grounded, balanced development</string>
+    <string id="MetalDescription">Clear and bright, focused thinking</string>
+    <string id="WaterDescription">Deep and tranquil, inner peace</string>
+    
+    <!-- Data Labels -->
+    <string id="Steps">Steps</string>
+    <string id="HeartRate">Heart Rate</string>
+    <string id="Calories">Calories</string>
+    <string id="Battery">Battery</string>
+    <string id="Weather">Weather</string>
+    <string id="Temperature">Temperature</string>
+    
+    <!-- Units -->
+    <string id="StepsUnit">steps</string>
+    <string id="HeartRateUnit">bpm</string>
+    <string id="CaloriesUnit">kcal</string>
+    <string id="BatteryUnit">%</string>
+    <string id="TemperatureUnit">°C</string>
+    
+    <!-- Settings Menu -->
+    <string id="Settings">Watch Face Settings</string>
+    <string id="FiveElementColor">Five Element Colors</string>
+    <string id="DataDisplay">Data Display</string>
+    <string id="Brightness">Brightness</string>
+    <string id="ColorTheme">Color Theme</string>
+    <string id="DisplayOptions">Display Options</string>
+    <string id="ResetDefaults">Reset to Defaults</string>
+    
+    <!-- Display Modes -->
+    <string id="DisplayModeStandard">Standard</string>
+    <string id="DisplayModeSimple">Simple</string>
+    <string id="DisplayModeDetailed">Detailed</string>
+    
+    <!-- Color Themes -->
+    <string id="ThemeClassic">Classic</string>
+    <string id="ThemeModern">Modern</string>
+    <string id="ThemeMinimal">Minimal</string>
+    
+    <!-- Detail Pages -->
+    <string id="HealthData">Health Data</string>
+    <string id="EnvironmentInfo">Environment Info</string>
+    <string id="FiveElementInfo">Five Element Colors</string>
+    
+    <!-- Health Data -->
+    <string id="StepGoal">Step Goal</string>
+    <string id="CalorieGoal">Calorie Goal</string>
+    <string id="ActiveMinutes">Active Minutes</string>
+    <string id="SleepQuality">Sleep Quality</string>
+    <string id="HeartRateZone">Heart Rate Zone</string>
+    
+    <!-- Heart Rate Zones -->
+    <string id="HeartRateRest">Rest</string>
+    <string id="HeartRateLight">Light</string>
+    <string id="HeartRateModerate">Moderate</string>
+    <string id="HeartRateVigorous">Vigorous</string>
+    <string id="HeartRateMaximum">Maximum</string>
+    
+    <!-- Sleep Quality -->
+    <string id="SleepExcellent">Excellent</string>
+    <string id="SleepGood">Good</string>
+    <string id="SleepFair">Fair</string>
+    <string id="SleepPoor">Poor</string>
+    
+    <!-- Environment Info -->
+    <string id="Humidity">Humidity</string>
+    <string id="UVIndex">UV Index</string>
+    <string id="AirQuality">Air Quality</string>
+    <string id="Sunrise">Sunrise</string>
+    <string id="Sunset">Sunset</string>
+    
+    <!-- Weather Conditions -->
+    <string id="WeatherSunny">Sunny</string>
+    <string id="WeatherCloudy">Cloudy</string>
+    <string id="WeatherRainy">Rainy</string>
+    <string id="WeatherSnowy">Snowy</string>
+    <string id="WeatherFoggy">Foggy</string>
+    
+    <!-- Color Suggestions -->
+    <string id="ClothingSuggestionWood">Today's suggestion: Green clothing</string>
+    <string id="ClothingSuggestionFire">Today's suggestion: Red clothing</string>
+    <string id="ClothingSuggestionEarth">Today's suggestion: Yellow clothing</string>
+    <string id="ClothingSuggestionMetal">Today's suggestion: White clothing</string>
+    <string id="ClothingSuggestionWater">Today's suggestion: Blue clothing</string>
+    
+    <!-- Watch Face Title and Suggestions -->
+    <string id="FiveElementTitle">Five Elements</string>
+    <string id="TodayClothingSuggestion">Today: Red top with earth-tone accessories</string>
+    
+    <!-- Week Related -->
+    <string id="WeekPrefix">Week</string>
+    <string id="DefaultDate">--/-- Week--</string>
+    <string id="WeekSun">Sun</string>
+    <string id="WeekMon">Mon</string>
+    <string id="WeekTue">Tue</string>
+    <string id="WeekWed">Wed</string>
+    <string id="WeekThu">Thu</string>
+    <string id="WeekFri">Fri</string>
+    <string id="WeekSat">Sat</string>
+    
+    <!-- Operation Hints -->
+    <string id="NavigationHint">Up/Down to select, Enter to modify, Back to exit</string>
+    <string id="DetailNavigationHint">Left/Right to switch pages, Back to exit</string>
+    <string id="TapToChange">Tap to change</string>
+    <string id="SwipeToNavigate">Swipe to navigate</string>
+    
+    <!-- Status Information -->
+    <string id="DataUpdated">Data updated</string>
+    <string id="SettingsSaved">Settings saved</string>
+    <string id="DefaultsRestored">Defaults restored</string>
+    <string id="ColorChanged">Color scheme changed</string>
+    
+    <!-- Error Messages -->
+    <string id="DataNotAvailable">Data not available</string>
+    <string id="SensorError">Sensor error</string>
+    <string id="WeatherError">Weather data fetch failed</string>
+    
+    <!-- Time Format -->
+    <string id="TimeFormat24">24-hour format</string>
+    <string id="TimeFormat12">12-hour format</string>
+    <string id="AM">AM</string>
+    <string id="PM">PM</string>
+    
+    <!-- Date Format -->
+    <string id="Monday">Monday</string>
+    <string id="Tuesday">Tuesday</string>
+    <string id="Wednesday">Wednesday</string>
+    <string id="Thursday">Thursday</string>
+    <string id="Friday">Friday</string>
+    <string id="Saturday">Saturday</string>
+    <string id="Sunday">Sunday</string>
+    
+    <string id="January">January</string>
+    <string id="February">February</string>
+    <string id="March">March</string>
+    <string id="April">April</string>
+    <string id="May">May</string>
+    <string id="June">June</string>
+    <string id="July">July</string>
+    <string id="August">August</string>
+    <string id="September">September</string>
+    <string id="October">October</string>
+    <string id="November">November</string>
+    <string id="December">December</string>
+    
+    <!-- Function Switches -->
+    <string id="On">On</string>
+    <string id="Off">Off</string>
+    <string id="Enabled">Enabled</string>
+    <string id="Disabled">Disabled</string>
+    
+    <!-- Version Information -->
+    <string id="Version">Version</string>
+    <string id="BuildDate">Build Date</string>
+    <string id="Developer">Developer</string>
+</strings>

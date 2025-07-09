@@ -1,0 +1,15 @@
+<drawables>
+    <bitmap id="LauncherIcon" filename="launcher_icon.svg" />
+    <bitmap id="WeekSun" filename="week_sun.svg" />
+    <bitmap id="WeekMon" filename="week_mon.svg" />
+    <bitmap id="WeekTue" filename="week_tue.svg" />
+    <bitmap id="WeekWed" filename="week_wed.svg" />
+    <bitmap id="WeekThu" filename="week_thu.svg" />
+    <bitmap id="WeekFri" filename="week_fri.svg" />
+    <bitmap id="WeekSat" filename="week_sat.svg" />
+    <bitmap id="HeartIcon" filename="heart_icon.svg" />
+    <bitmap id="StepsIcon" filename="steps_icon.svg" />
+    <bitmap id="CaloriesIcon" filename="calories_icon.svg" />
+    <bitmap id="BatteryIcon" filename="battery_icon.svg" />
+    <bitmap id="WeatherIcon" filename="weather_icon.svg" />
+</drawables>

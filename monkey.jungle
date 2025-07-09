@@ -1,0 +1,11 @@
+project.manifest = manifest.xml
+base.sourcePath = source
+base.resourcePath = resources
+
+# Device-specific resources with appropriate launcher icon sizes
+fr965.resourcePath = resources;resources-fr965
+fr255.resourcePath = resources
+fr265.resourcePath = resources
+fr265s.resourcePath = resources
+venu3.resourcePath = resources
+venu3s.resourcePath = resources

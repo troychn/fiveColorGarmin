@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="60" cy="60" r="58" fill="#1a1a1a" stroke="#333" stroke-width="2"/>
+  
+  <!-- Five elements arranged in a circle -->
+  <!-- Wood (Green) - Top -->
+  <circle cx="60" cy="25" r="12" fill="#4CAF50" opacity="0.8"/>
+  <text x="60" y="30" text-anchor="middle" fill="white" font-size="10" font-family="Arial">木</text>
+  
+  <!-- Fire (Red) - Top Right -->
+  <circle cx="85" cy="40" r="12" fill="#F44336" opacity="0.8"/>
+  <text x="85" y="45" text-anchor="middle" fill="white" font-size="10" font-family="Arial">火</text>
+  
+  <!-- Earth (Yellow) - Bottom Right -->
+  <circle cx="85" cy="80" r="12" fill="#FFC107" opacity="0.8"/>
+  <text x="85" y="85" text-anchor="middle" fill="black" font-size="10" font-family="Arial">土</text>
+  
+  <!-- Metal (White) - Bottom Left -->
+  <circle cx="35" cy="80" r="12" fill="#E0E0E0" opacity="0.8"/>
+  <text x="35" y="85" text-anchor="middle" fill="black" font-size="10" font-family="Arial">金</text>
+  
+  <!-- Water (Blue) - Top Left -->
+  <circle cx="35" cy="40" r="12" fill="#2196F3" opacity="0.8"/>
+  <text x="35" y="45" text-anchor="middle" fill="white" font-size="10" font-family="Arial">水</text>
+  
+  <!-- Center symbol -->
+  <circle cx="60" cy="60" r="8" fill="#9C27B0" opacity="0.9"/>
+  <text x="60" y="65" text-anchor="middle" fill="white" font-size="8" font-family="Arial">五</text>
+</svg>

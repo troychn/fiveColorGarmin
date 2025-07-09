@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<strings>
+    <!-- 应用基本信息 -->
+    <string id="AppName">五行配色表盘</string>
+    <string id="AppDescription">基于中国传统五行理论的智能配色表盘</string>
+    
+    <!-- 五行元素 -->
+    <string id="ElementWood">木</string>
+    <string id="ElementFire">火</string>
+    <string id="ElementEarth">土</string>
+    <string id="ElementMetal">金</string>
+    <string id="ElementWater">水</string>
+    
+    <!-- 五行描述 -->
+    <string id="WoodDescription">生机盎然，适合运动</string>
+    <string id="FireDescription">热情活力，充满能量</string>
+    <string id="EarthDescription">稳重踏实，平衡发展</string>
+    <string id="MetalDescription">清净明亮，专注思考</string>
+    <string id="WaterDescription">深邃宁静，内心平和</string>
+    
+    <!-- 数据标签 -->
+    <string id="Steps">步数</string>
+    <string id="HeartRate">心率</string>
+    <string id="Calories">卡路里</string>
+    <string id="Battery">电量</string>
+    <string id="Weather">天气</string>
+    <string id="Temperature">温度</string>
+    
+    <!-- 单位 -->
+    <string id="StepsUnit">步</string>
+    <string id="HeartRateUnit">bpm</string>
+    <string id="CaloriesUnit">kcal</string>
+    <string id="BatteryUnit">%</string>
+    <string id="TemperatureUnit">°C</string>
+    
+    <!-- 设置菜单 -->
+    <string id="Settings">表盘设置</string>
+    <string id="FiveElementColor">五行配色</string>
+    <string id="DataDisplay">数据显示</string>
+    <string id="Brightness">亮度调节</string>
+    <string id="ColorTheme">颜色主题</string>
+    <string id="DisplayOptions">显示选项</string>
+    <string id="ResetDefaults">恢复默认</string>
+    
+    <!-- 显示模式 -->
+    <string id="DisplayModeStandard">标准</string>
+    <string id="DisplayModeSimple">简洁</string>
+    <string id="DisplayModeDetailed">详细</string>
+    
+    <!-- 颜色主题 -->
+    <string id="ThemeClassic">经典</string>
+    <string id="ThemeModern">现代</string>
+    <string id="ThemeMinimal">简约</string>
+    
+    <!-- 详细信息页面 -->
+    <string id="HealthData">健康数据</string>
+    <string id="EnvironmentInfo">环境信息</string>
+    <string id="FiveElementInfo">五行配色</string>
+    
+    <!-- 健康数据 -->
+    <string id="StepGoal">步数目标</string>
+    <string id="CalorieGoal">卡路里目标</string>
+    <string id="ActiveMinutes">活动时间</string>
+    <string id="SleepQuality">睡眠质量</string>
+    <string id="HeartRateZone">心率区间</string>
+    
+    <!-- 心率区间 -->
+    <string id="HeartRateRest">休息</string>
+    <string id="HeartRateLight">轻度</string>
+    <string id="HeartRateModerate">中度</string>
+    <string id="HeartRateVigorous">剧烈</string>
+    <string id="HeartRateMaximum">极限</string>
+    
+    <!-- 睡眠质量 -->
+    <string id="SleepExcellent">优秀</string>
+    <string id="SleepGood">良好</string>
+    <string id="SleepFair">一般</string>
+    <string id="SleepPoor">较差</string>
+    
+    <!-- 环境信息 -->
+    <string id="Humidity">湿度</string>
+    <string id="UVIndex">紫外线</string>
+    <string id="AirQuality">空气质量</string>
+    <string id="Sunrise">日出时间</string>
+    <string id="Sunset">日落时间</string>
+    
+    <!-- 湿度等级 -->
+    <string id="HumidityDry">干燥</string>
+    <string id="HumidityComfortable">舒适</string>
+    <string id="HumidityHumid">潮湿</string>
+    <string id="HumidityVeryHumid">很潮湿</string>
+    
+    <!-- 紫外线等级 -->
+    <string id="UVLow">低</string>
+    <string id="UVModerate">中等</string>
+    <string id="UVHigh">高</string>
+    <string id="UVVeryHigh">很高</string>
+    <string id="UVExtreme">极高</string>
+    
+    <!-- 空气质量等级 -->
+    <string id="AirQualityExcellent">优</string>
+    <string id="AirQualityGood">良</string>
+    <string id="AirQualityLightPollution">轻度污染</string>
+    <string id="AirQualityModeratePollution">中度污染</string>
+    <string id="AirQualityHeavyPollution">重度污染</string>
+    
+    <!-- 天气状况 -->
+    <string id="WeatherSunny">晴朗</string>
+    <string id="WeatherCloudy">多云</string>
+    <string id="WeatherRainy">雨天</string>
+    <string id="WeatherSnowy">雪天</string>
+    <string id="WeatherFoggy">雾天</string>
+    
+    <!-- 配色建议 -->
+    <string id="ClothingSuggestionWood">今日宜穿：绿色系服装</string>
+    <string id="ClothingSuggestionFire">今日宜穿：红色系服装</string>
+    <string id="ClothingSuggestionEarth">今日宜穿：黄色系服装</string>
+    <string id="ClothingSuggestionMetal">今日宜穿：白色系服装</string>
+    <string id="ClothingSuggestionWater">今日宜穿：蓝色系服装</string>
+    
+    <!-- 表盘标题和建议 -->
+    <string id="FiveElementTitle">五行配色</string>
+    <string id="TodayClothingSuggestion">今日宜穿: 红色系上衣配土黄配饰</string>
+    
+    <!-- 星期相关 -->
+    <string id="WeekPrefix">星期</string>
+    <string id="DefaultDate">--/-- 星期--</string>
+    <string id="WeekSun">日</string>
+    <string id="WeekMon">一</string>
+    <string id="WeekTue">二</string>
+    <string id="WeekWed">三</string>
+    <string id="WeekThu">四</string>
+    <string id="WeekFri">五</string>
+    <string id="WeekSat">六</string>
+    
+    <!-- 操作提示 -->
+    <string id="NavigationHint">上下选择 确认修改 返回退出</string>
+    <string id="DetailNavigationHint">左右切换页面 返回退出</string>
+    <string id="TapToChange">点击切换</string>
+    <string id="SwipeToNavigate">滑动导航</string>
+    
+    <!-- 状态信息 -->
+    <string id="DataUpdated">数据已更新</string>
+    <string id="SettingsSaved">设置已保存</string>
+    <string id="DefaultsRestored">已恢复默认设置</string>
+    <string id="ColorChanged">配色已切换</string>
+    
+    <!-- 错误信息 -->
+    <string id="DataNotAvailable">数据不可用</string>
+    <string id="SensorError">传感器错误</string>
+    <string id="WeatherError">天气数据获取失败</string>
+    
+    <!-- 时间格式 -->
+    <string id="TimeFormat24">24小时制</string>
+    <string id="TimeFormat12">12小时制</string>
+    <string id="AM">上午</string>
+    <string id="PM">下午</string>
+    
+    <!-- 日期格式 -->
+    <string id="Monday">周一</string>
+    <string id="Tuesday">周二</string>
+    <string id="Wednesday">周三</string>
+    <string id="Thursday">周四</string>
+    <string id="Friday">周五</string>
+    <string id="Saturday">周六</string>
+    <string id="Sunday">周日</string>
+    
+    <string id="January">一月</string>
+    <string id="February">二月</string>
+    <string id="March">三月</string>
+    <string id="April">四月</string>
+    <string id="May">五月</string>
+    <string id="June">六月</string>
+    <string id="July">七月</string>
+    <string id="August">八月</string>
+    <string id="September">九月</string>
+    <string id="October">十月</string>
+    <string id="November">十一月</string>
+    <string id="December">十二月</string>
+    
+    <!-- 功能开关 -->
+    <string id="On">开启</string>
+    <string id="Off">关闭</string>
+    <string id="Enabled">启用</string>
+    <string id="Disabled">禁用</string>
+    
+    <!-- 版本信息 -->
+    <string id="Version">版本</string>
+    <string id="BuildDate">构建日期</string>
+    <string id="Developer">开发者</string>
+</strings>

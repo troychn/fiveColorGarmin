@@ -1,0 +1,170 @@
+# Connect IQ 构建输出
+*.prg
+*.iq
+bin/
+build/
+
+# Connect IQ 调试文件
+*.debug.xml
+*-settings.json
+external-mir/
+internal-mir/
+gen/
+
+# 开发者密钥（敏感信息）
+*.der
+*.p12
+*.pem
+keys/
+
+# IDE 和编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+*.tmp
+*.temp
+temp/
+tmp/
+
+# 备份文件
+*.bak
+*.backup
+*.orig
+*copy.*
+* copy.*
+
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar
+
+# 依赖和包管理
+node_modules/
+*.lock
+
+# 测试覆盖率
+coverage/
+*.coverage
+
+# 文档生成
+docs/_build/
+*.pdf
+
+# 配置文件（可能包含敏感信息）
+config.local.*
+.env
+.env.local
+.env.*.local
+
+# 缓存目录
+.cache/
+*.cache
+
+# 运行时文件
+*.pid
+*.seed
+*.pid.lock
+
+# 调试文件
+*.dmp
+*.stackdump
+
+# Connect IQ 特定文件
+.connectiq/
+simulator/
+*.monkey
+
+# 编译器生成的文件
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+
+# 包文件
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# 虚拟环境
+venv/
+env/
+ENV/
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+# 媒体文件（如果不需要版本控制）
+# *.png
+# *.jpg
+# *.jpeg
+# *.gif
+# *.mp4
+# *.avi
+
+# 本地开发配置
+local.properties
+local.json
+
+# 性能分析文件
+*.prof
+
+# 内存转储
+*.hprof
+
+# 单元测试结果
+TEST-*.xml
+
+# Gradle 文件（如果使用）
+.gradle/
+build/
+
+# Maven 文件（如果使用）
+target/
+
+# 自定义忽略
+# 在这里添加项目特定的忽略规则
+
+# 开发工具生成的文件
+*.code-workspace
+
+# 本地测试文件
+test_local/
+*.test
+
+# 发布准备文件
+release/
+dist/
+
+# 文档草稿
+*.draft
+*.wip
+
+# 个人笔记
+notes.txt
+TODO.md
+*.personal

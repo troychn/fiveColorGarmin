@@ -1,0 +1,142 @@
+<properties>
+    <!-- 五行配色表盘默认属性配置 -->
+    
+    <!-- 五行元素默认选择 (0=木, 1=火, 2=土, 3=金, 4=水) -->
+    <property id="ElementIndex" type="number">0</property>
+    
+    <!-- 数据显示模式 (0=标准, 1=简洁, 2=详细) -->
+    <property id="DataDisplayMode" type="number">0</property>
+    
+    <!-- 颜色主题 (0=经典, 1=现代, 2=简约) -->
+    <property id="ColorTheme" type="number">0</property>
+    
+    <!-- 亮度设置 (10-100) -->
+    <property id="Brightness" type="number">50</property>
+    
+    <!-- 数据显示开关 -->
+    <property id="ShowSteps" type="boolean">true</property>
+    <property id="ShowHeartRate" type="boolean">true</property>
+    <property id="ShowCalories" type="boolean">true</property>
+    <property id="ShowBattery" type="boolean">true</property>
+    <property id="ShowWeather" type="boolean">true</property>
+    <property id="ShowClothingSuggestion" type="boolean">true</property>
+    
+    <!-- 时间和日期设置 -->
+    <property id="TimeFormat" type="number">0</property> <!-- 0=24小时, 1=12小时 -->
+    <property id="ShowDate" type="boolean">true</property>
+    <property id="ShowSeconds" type="boolean">false</property>
+    
+    <!-- 表盘元素显示 -->
+    <property id="ShowNumbers" type="boolean">true</property>
+    <property id="TickStyle" type="number">1</property> <!-- 0=简单, 1=详细, 2=无 -->
+    <property id="HandStyle" type="number">0</property> <!-- 0=经典, 1=现代, 2=简约 -->
+    <property id="BackgroundStyle" type="number">0</property> <!-- 0=纯色, 1=渐变, 2=纹理 -->
+    
+    <!-- 五行圆环设置 -->
+    <property id="ShowFiveElementRing" type="boolean">true</property>
+    <property id="FiveElementRingPosition" type="number">0</property> <!-- 0=顶部, 1=中心, 2=底部 -->
+    
+    <!-- 布局设置 -->
+    <property id="DataPosition" type="number">0</property> <!-- 0=标准, 1=紧凑, 2=分散 -->
+    <property id="FontSize" type="number">1</property> <!-- 0=小, 1=中, 2=大 -->
+    
+    <!-- 交互设置 -->
+    <property id="VibrateOnInteraction" type="boolean">true</property>
+    
+    <!-- 自动功能 -->
+    <property id="AutoSwitchElement" type="boolean">false</property>
+    <property id="AutoSwitchInterval" type="number">6</property> <!-- 小时 -->
+    
+    <!-- 电源管理 -->
+    <property id="PowerSaveMode" type="boolean">false</property>
+    <property id="NightMode" type="boolean">false</property>
+    <property id="NightModeStartTime" type="number">22</property>
+    <property id="NightModeEndTime" type="number">6</property>
+    
+    <!-- 数据更新 -->
+    <property id="DataUpdateFrequency" type="number">1</property> <!-- 0=实时, 1=每分钟, 2=每5分钟, 3=每15分钟 -->
+    <property id="WeatherDataSource" type="number">0</property> <!-- 0=系统默认, 1=Connect IQ, 2=手机同步 -->
+    
+    <!-- 本地化 -->
+    <property id="Language" type="number">0</property> <!-- 0=中文, 1=English, 2=自动 -->
+    
+    <!-- 扩展显示选项 -->
+    <property id="ShowExtended" type="boolean">false</property>
+    
+    <!-- 五行配色方案 -->
+    <!-- 木元素配色 -->
+    <property id="WoodPrimaryColor" type="number">0x4CAF50</property> <!-- 绿色 -->
+    <property id="WoodSecondaryColor" type="number">0x2E7D32</property> <!-- 深绿色 -->
+    
+    <!-- 火元素配色 -->
+    <property id="FirePrimaryColor" type="number">0xF44336</property> <!-- 红色 -->
+    <property id="FireSecondaryColor" type="number">0xC62828</property> <!-- 深红色 -->
+    
+    <!-- 土元素配色 -->
+    <property id="EarthPrimaryColor" type="number">0xFF9800</property> <!-- 橙色 -->
+    <property id="EarthSecondaryColor" type="number">0xE65100</property> <!-- 深橙色 -->
+    
+    <!-- 金元素配色 -->
+    <property id="MetalPrimaryColor" type="number">0xFFFFFF</property> <!-- 白色 -->
+    <property id="MetalSecondaryColor" type="number">0xBDBDBD</property> <!-- 灰色 -->
+    
+    <!-- 水元素配色 -->
+    <property id="WaterPrimaryColor" type="number">0x2196F3</property> <!-- 蓝色 -->
+    <property id="WaterSecondaryColor" type="number">0x1565C0</property> <!-- 深蓝色 -->
+    
+    <!-- 数据字段位置微调 -->
+    <property id="StepsPositionX" type="number">0</property>
+    <property id="StepsPositionY" type="number">0</property>
+    <property id="HeartRatePositionX" type="number">0</property>
+    <property id="HeartRatePositionY" type="number">0</property>
+    <property id="CaloriesPositionX" type="number">0</property>
+    <property id="CaloriesPositionY" type="number">0</property>
+    <property id="BatteryPositionX" type="number">0</property>
+    <property id="BatteryPositionY" type="number">0</property>
+    <property id="WeatherPositionX" type="number">0</property>
+    <property id="WeatherPositionY" type="number">0</property>
+    
+    <!-- 动画设置 -->
+    <property id="EnableAnimations" type="boolean">true</property>
+    <property id="AnimationSpeed" type="number">1</property> <!-- 0=慢, 1=正常, 2=快 -->
+    
+    <!-- 调试选项 -->
+    <property id="DebugMode" type="boolean">false</property>
+    <property id="ShowFPS" type="boolean">false</property>
+    
+    <!-- 版本信息 -->
+    <property id="ConfigVersion" type="string">1.0.0</property>
+    <property id="LastUpdated" type="string">2024-01-01</property>
+    
+    <!-- 用户偏好 -->
+    <property id="FirstRun" type="boolean">true</property>
+    <property id="TutorialCompleted" type="boolean">false</property>
+    <property id="UsageCount" type="number">0</property>
+    
+    <!-- 高级设置 -->
+    <property id="CustomColorEnabled" type="boolean">false</property>
+    <property id="CustomPrimaryColor" type="number">0xFFFFFF</property>
+    <property id="CustomSecondaryColor" type="number">0x000000</property>
+    
+    <!-- 传感器设置 -->
+    <property id="HeartRateZoneDisplay" type="boolean">true</property>
+    <property id="StepGoalDisplay" type="boolean">true</property>
+    <property id="CalorieGoalDisplay" type="boolean">true</property>
+    
+    <!-- 天气设置 -->
+    <property id="TemperatureUnit" type="number">0</property> <!-- 0=摄氏度, 1=华氏度 -->
+    <property id="WeatherUpdateInterval" type="number">30</property> <!-- 分钟 -->
+    
+    <!-- 电池显示设置 -->
+    <property id="BatteryWarningLevel" type="number">20</property> <!-- 百分比 -->
+    <property id="BatteryColorWarning" type="boolean">true</property>
+    
+    <!-- 五行理论设置 -->
+    <property id="ElementRotationMode" type="number">0</property> <!-- 0=手动, 1=时间, 2=季节, 3=随机 -->
+    <property id="SeasonalElementMapping" type="boolean">true</property>
+    
+    <!-- 可访问性设置 -->
+    <property id="HighContrastMode" type="boolean">false</property>
+    <property id="LargeTextMode" type="boolean">false</property>
+    <property id="ReducedMotion" type="boolean">false</property>
+</properties>
