@@ -1102,9 +1102,17 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
         }
     }
 
-    private function calculateDailyFiveElementColors() as Array {
+    /**
+     * 计算指定日期的五行配色
+     * @param today 日期信息对象，如果为null则使用当前日期
+     * @return 包含时针、分针、秒针颜色的数组 [大吉色, 次吉色, 平平色]
+     */
+    private function calculateDailyFiveElementColors(today) as Array {
         try {
-            var today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
+            // 如果没有传入日期参数，则使用当前日期
+            if (today == null) {
+                today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
+            }
             
             // 获取当前日期
             var year = today.year;
@@ -1213,6 +1221,43 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
      */
     private function isLeapYear(year as Number) as Boolean {
         return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+    }
+
+    /**
+     * 获取明日的五行配色
+     * @return 包含明日时针、分针、秒针颜色的数组 [大吉色, 次吉色, 平平色]
+     */
+    private function getTomorrowFiveElementColors() as Array {
+        try {
+            // 获取明日的日期
+            var tomorrow = new Time.Moment(Time.now().value() + 24 * 60 * 60);
+            var tomorrowInfo = Gregorian.info(tomorrow, Time.FORMAT_MEDIUM);
+            
+            // 计算明日的五行配色
+            return calculateDailyFiveElementColors(tomorrowInfo);
+        } catch (ex) {
+            // 如果出错，返回默认配色
+            return calculateDailyFiveElementColors(null);
+        }
+    }
+
+    /**
+     * 获取指定日期偏移的五行配色
+     * @param dayOffset 日期偏移量（0=今天，1=明天，-1=昨天）
+     * @return 包含指定日期时针、分针、秒针颜色的数组 [大吉色, 次吉色, 平平色]
+     */
+    private function getFiveElementColorsByOffset(dayOffset as Number) as Array {
+        try {
+            // 计算目标日期
+            var targetMoment = new Time.Moment(Time.now().value() + dayOffset * 24 * 60 * 60);
+            var targetInfo = Gregorian.info(targetMoment, Time.FORMAT_MEDIUM);
+            
+            // 计算目标日期的五行配色
+            return calculateDailyFiveElementColors(targetInfo);
+        } catch (ex) {
+            // 如果出错，返回当前日期的配色
+            return calculateDailyFiveElementColors(null);
+        }
     }
 
     /**
@@ -1593,12 +1638,19 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             
             
             // 获取当日五行配色（最吉、次吉、平吉）
-            var dailyColors = calculateDailyFiveElementColors();
+            var dailyColors = calculateDailyFiveElementColors(null);
+            // 获取明日五行配色
+            var tomorrowColors = getTomorrowFiveElementColors();
             
             // 确保颜色值是数字类型
             var hourColor = (dailyColors[0] instanceof Number) ? dailyColors[0] : 0x00FF00;
             var minuteColor = (dailyColors[1] instanceof Number) ? dailyColors[1] : 0xFF0000;
             var secondColor = (dailyColors[2] instanceof Number) ? dailyColors[2] : 0xFFFFFF;
+            
+            // 确保明日配色值是数字类型
+            var tomorrowHourColor = (tomorrowColors[0] instanceof Number) ? tomorrowColors[0] : 0x00FF00;
+            var tomorrowMinuteColor = (tomorrowColors[1] instanceof Number) ? tomorrowColors[1] : 0xFF0000;
+            var tomorrowSecondColor = (tomorrowColors[2] instanceof Number) ? tomorrowColors[2] : 0xFFFFFF;
             
             // 确保_radius不为null并进行安全计算
             var safeRadius = (_radius != null) ? _radius : 100;
@@ -1618,14 +1670,14 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             var minuteWidth = 14; // 分针宽度从8增加到14  
             var secondWidth = 8;  // 秒针宽度从3大幅增加到8
             
-            // 绘制时针 - 参考SVG设计的箭头形状
-            drawArrowHand(dc, hourAngle, hourLength, hourWidth, 12, hourColor, "hour");
+            // 绘制时针 - 参考SVG设计的箭头形状，添加明日配色圆形
+            drawArrowHandWithTomorrowColor(dc, hourAngle, hourLength, hourWidth, 12, hourColor, tomorrowHourColor, "hour");
             
-            // 绘制分针 - 参考SVG设计的箭头形状
-            drawArrowHand(dc, minuteAngle, minuteLength, minuteWidth, 8, minuteColor, "minute");
+            // 绘制分针 - 参考SVG设计的箭头形状，添加明日配色圆形
+            drawArrowHandWithTomorrowColor(dc, minuteAngle, minuteLength, minuteWidth, 8, minuteColor, tomorrowMinuteColor, "minute");
             
-            // 绘制秒针 - 参考SVG设计的细长箭头形状
-            drawArrowHand(dc, secondAngle, secondLength, secondWidth, 4, secondColor, "second");
+            // 绘制秒针 - 参考SVG设计的细长箭头形状，添加明日配色圆形
+            drawArrowHandWithTomorrowColor(dc, secondAngle, secondLength, secondWidth, 4, secondColor, tomorrowSecondColor, "second");
             
             // 绘制中心圆点 - 使用最吉颜色
             dc.setColor(hourColor, Graphics.COLOR_TRANSPARENT);
@@ -1633,6 +1685,54 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             
         } catch (ex) {
         }
+    }
+    
+    /**
+     * 绘制带明日配色圆形的箭头形状指针 - 参考SVG图标设计，增强对比度
+     * @param dc 绘图上下文
+     * @param angle 指针角度
+     * @param length 指针长度
+     * @param width 指针宽度
+     * @param arrowSize 箭头尖端大小
+     * @param color 指针颜色
+     * @param tomorrowColor 明日配色
+     * @param type 指针类型
+     */
+    private function drawArrowHandWithTomorrowColor(dc as Graphics.Dc, angle as Float, length as Number, width as Number, arrowSize as Number, color as Number, tomorrowColor as Number, type as String) as Void {
+        // 先绘制原有指针
+        drawArrowHand(dc, angle, length, width, arrowSize, color, type);
+        
+        // 在针身与针尖交接位置绘制明日配色圆形
+        var sin = Math.sin(angle);
+        var cos = Math.cos(angle);
+        if (sin == null) { sin = 0.0; }
+        if (cos == null) { cos = 1.0; }
+        
+        // 计算针身与针尖交接位置（主体长度为总长度的70%）
+        var baseLength = length * 0.7;
+        var circleX = _centerX + (baseLength * sin).toNumber();
+        var circleY = _centerY - (baseLength * cos).toNumber();
+        
+        // 根据指针类型设置圆形大小 - 圆形直径超过指针宽度以确保明显可见
+        var circleRadius = 8; // 默认半径
+        if (type.equals("hour")) {
+            // 时针宽度18px，圆形半径12px，直径24px > 指针宽度18px
+            circleRadius = 12; // 时针圆形最大，突出明日最吉配色
+        } else if (type.equals("minute")) {
+            // 分针宽度14px，圆形半径10px，直径20px > 指针宽度14px
+            circleRadius = 10; // 分针圆形中等，显示明日次吉配色
+        } else if (type.equals("second")) {
+            // 秒针宽度8px，圆形半径6px，直径12px > 指针宽度8px
+            circleRadius = 6; // 秒针圆形较小，展示明日平平配色
+        }
+        
+        // 绘制白色描边圆形
+        dc.setColor(0xFFFFFF, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(circleX, circleY, circleRadius + 1);
+        
+        // 绘制明日配色实心圆形
+        dc.setColor(tomorrowColor, Graphics.COLOR_TRANSPARENT);
+        dc.fillCircle(circleX, circleY, circleRadius);
     }
     
     /**
