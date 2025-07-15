@@ -1660,35 +1660,34 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             var originalMinuteLength = (safeRadius - 10).toNumber();
             var originalSecondLength = (safeRadius - 5).toNumber();
             
-            // 时针长度缩短1/3再缩短8像素，分针长度增加24像素，秒针缩短24像素
-            var hourLength = (originalHourLength * 2 / 3 - 8).toNumber(); // 时针缩短1/3后再缩短8像素
-            var minuteLength = (originalMinuteLength * 2 / 3 + 24).toNumber(); // 分针缩短1/3后再增加24像素（原18+新增6）
+            // 时针长度缩短1/3再缩短8像素后再缩短六分之一，分针长度调整到时针和秒针之间，秒针缩短24像素
+            var hourLength = ((originalHourLength * 2 / 3 - 8) * 5 / 6 + 10).toNumber(); // 时针缩短1/3再缩短8像素后再缩短六分之一，然后增加10像素
             var secondLength = (originalSecondLength - 24).toNumber(); // 秒针缩短24像素
+            var minuteLength = ((hourLength + secondLength) / 2 + 5).toNumber(); // 分针长度设为时针和秒针的中间值再增加5像素
             
-            // 指针宽度大幅增加，确保主体颜色清晰可见
-            var hourWidth = 18;   // 时针宽度从13增加到18
-            var minuteWidth = 14; // 分针宽度从8增加到14  
-            var secondWidth = 8;  // 秒针宽度从3大幅增加到8
+            // 指针宽度按比例增加三分之一，确保主体颜色清晰可见
+            var hourWidth = 24;   // 时针宽度从18增加到24（增加1/3）
+            var minuteWidth = 19; // 分针宽度从14增加到19（增加1/3）  
+            var secondWidth = 11; // 秒针宽度从8增加到11（增加1/3）
             
-            // 绘制时针 - 参考SVG设计的箭头形状，添加明日配色圆形
+            // 绘制时针
             drawArrowHandWithTomorrowColor(dc, hourAngle, hourLength, hourWidth, 12, hourColor, tomorrowHourColor, "hour");
             
-            // 绘制分针 - 参考SVG设计的箭头形状，添加明日配色圆形
+            // 绘制分针
             drawArrowHandWithTomorrowColor(dc, minuteAngle, minuteLength, minuteWidth, 8, minuteColor, tomorrowMinuteColor, "minute");
             
-            // 绘制秒针 - 参考SVG设计的细长箭头形状，添加明日配色圆形
+            // 绘制秒针
             drawArrowHandWithTomorrowColor(dc, secondAngle, secondLength, secondWidth, 4, secondColor, tomorrowSecondColor, "second");
             
-            // 绘制中心圆点 - 使用最吉颜色
-            dc.setColor(hourColor, Graphics.COLOR_TRANSPARENT);
-            dc.fillCircle(_centerX, _centerY, 5);
+            // 绘制三层空心中心圆点
+            drawCenterCircles(dc, hourColor, minuteColor, secondColor);
             
         } catch (ex) {
         }
     }
     
     /**
-     * 绘制带明日配色圆形的箭头形状指针 - 参考SVG图标设计，增强对比度
+     * 绘制带明日配色的指针
      * @param dc 绘图上下文
      * @param angle 指针角度
      * @param length 指针长度
@@ -1699,40 +1698,291 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
      * @param type 指针类型
      */
     private function drawArrowHandWithTomorrowColor(dc as Graphics.Dc, angle as Float, length as Number, width as Number, arrowSize as Number, color as Number, tomorrowColor as Number, type as String) as Void {
-        // 先绘制原有指针
-        drawArrowHand(dc, angle, length, width, arrowSize, color, type);
+        drawNewStylePointer(dc, angle, length, width, color, tomorrowColor, type);
+    }
+    
+    /**
+     * 绘制三层空心中心圆点
+     * @param dc 绘图上下文
+     * @param hourColor 时针颜色
+     * @param minuteColor 分针颜色
+     * @param secondColor 秒针颜色
+     */
+    private function drawCenterCircles(dc as Graphics.Dc, hourColor as Number, minuteColor as Number, secondColor as Number) as Void {
+        // 外层圆（时针）
+        dc.setColor(hourColor, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(3);
+        dc.drawCircle(_centerX, _centerY, 8);
         
-        // 在针身与针尖交接位置绘制明日配色圆形
+        // 中层圆（分针）
+        dc.setColor(minuteColor, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(2);
+        dc.drawCircle(_centerX, _centerY, 5);
+        
+        // 内层圆（秒针）
+        dc.setColor(secondColor, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(1);
+        dc.drawCircle(_centerX, _centerY, 2);
+    }
+    
+    /**
+     * 绘制新样式指针：按设计图重新设计
+     * @param dc 绘图上下文
+     * @param angle 角度（弧度）
+     * @param length 指针长度
+     * @param width 指针宽度
+     * @param bodyColor 主体颜色（今日配色）
+     * @param tipColor 尖端小图标颜色（明日配色）
+     * @param type 指针类型
+     */
+    private function drawNewStylePointer(dc as Graphics.Dc, angle as Float, length as Number, width as Number, bodyColor as Number, tipColor as Number, type as String) as Void {
         var sin = Math.sin(angle);
         var cos = Math.cos(angle);
         if (sin == null) { sin = 0.0; }
         if (cos == null) { cos = 1.0; }
         
-        // 计算针身与针尖交接位置（主体长度为总长度的70%）
-        var baseLength = length * 0.7;
-        var circleX = _centerX + (baseLength * sin).toNumber();
-        var circleY = _centerY - (baseLength * cos).toNumber();
+        // 计算垂直方向
+        var perpAngle = angle + Math.PI / 2;
+        var perpSin = Math.sin(perpAngle);
+        var perpCos = Math.cos(perpAngle);
+        if (perpSin == null) { perpSin = 0.0; }
+        if (perpCos == null) { perpCos = 1.0; }
         
-        // 根据指针类型设置圆形大小 - 圆形直径超过指针宽度以确保明显可见
-        var circleRadius = 8; // 默认半径
-        if (type.equals("hour")) {
-            // 时针宽度18px，圆形半径12px，直径24px > 指针宽度18px
-            circleRadius = 12; // 时针圆形最大，突出明日最吉配色
-        } else if (type.equals("minute")) {
-            // 分针宽度14px，圆形半径10px，直径20px > 指针宽度14px
-            circleRadius = 10; // 分针圆形中等，显示明日次吉配色
-        } else if (type.equals("second")) {
-            // 秒针宽度8px，圆形半径6px，直径12px > 指针宽度8px
-            circleRadius = 6; // 秒针圆形较小，展示明日平平配色
+        // 按照设计图重新定义指针形状 - 从尾部逐渐变宽到连接处，然后形成三角形尖端
+        var baseLength = length * 0.75;  // 主体长度
+        var tipLength = length * 0.25;   // 尖端长度，形成三角形
+        var tailWidth = width * 0.3;     // 尾部宽度（最窄）
+        var maxWidth = width * 1.1;      // 主体与尖端连接处的最大宽度（调宽以容纳空心三角形）
+        
+        // 计算关键点坐标
+        var centerX = _centerX;
+        var centerY = _centerY;
+        
+        // 主体结束点（尖端开始点，也是最宽处）
+        var baseEndX = _centerX + (baseLength * sin).toNumber();
+        var baseEndY = _centerY - (baseLength * cos).toNumber();
+        
+        // 指针尖端
+        var tipX = _centerX + (length * sin).toNumber();
+        var tipY = _centerY - (length * cos).toNumber();
+        
+        // 计算尾部的四个顶点（最窄处）
+        var tailHalfWidth = tailWidth / 2;
+        var leftTailX = centerX + (tailHalfWidth * perpSin).toNumber();
+        var leftTailY = centerY - (tailHalfWidth * perpCos).toNumber();
+        var rightTailX = centerX - (tailHalfWidth * perpSin).toNumber();
+        var rightTailY = centerY + (tailHalfWidth * perpCos).toNumber();
+        
+        // 计算主体结束处的四个顶点（最宽处）
+        var maxHalfWidth = maxWidth / 2;
+        var leftMaxX = baseEndX + (maxHalfWidth * perpSin).toNumber();
+        var leftMaxY = baseEndY - (maxHalfWidth * perpCos).toNumber();
+        var rightMaxX = baseEndX - (maxHalfWidth * perpSin).toNumber();
+        var rightMaxY = baseEndY + (maxHalfWidth * perpCos).toNumber();
+        
+        // 检查是否需要白色描边
+        var needStroke = (bodyColor == 0x000000) || (bodyColor == tipColor) || 
+                        (bodyColor == 0x0000FF && type.equals("minute")) ||
+                        (bodyColor == 0x00FF00 && type.equals("hour"));
+        
+        // 先绘制白色描边（如果需要）- 梯形+三角形一体化描边
+        if (needStroke) {
+            dc.setColor(0xFFFFFF, Graphics.COLOR_TRANSPARENT);
+            var strokeOffset = 1; // 减少描边偏移，使线条更精细
+            
+            // 计算描边的各个关键点
+            var strokeTailHalfWidth = tailHalfWidth + strokeOffset;
+            var strokeLeftTailX = centerX + (strokeTailHalfWidth * perpSin).toNumber();
+            var strokeLeftTailY = centerY - (strokeTailHalfWidth * perpCos).toNumber();
+            var strokeRightTailX = centerX - (strokeTailHalfWidth * perpSin).toNumber();
+            var strokeRightTailY = centerY + (strokeTailHalfWidth * perpCos).toNumber();
+            
+            var strokeMaxHalfWidth = maxHalfWidth + strokeOffset;
+            var strokeLeftMaxX = baseEndX + (strokeMaxHalfWidth * perpSin).toNumber();
+            var strokeLeftMaxY = baseEndY - (strokeMaxHalfWidth * perpCos).toNumber();
+            var strokeRightMaxX = baseEndX - (strokeMaxHalfWidth * perpSin).toNumber();
+            var strokeRightMaxY = baseEndY + (strokeMaxHalfWidth * perpCos).toNumber();
+            
+            var strokeTipEndX = _centerX + ((length + strokeOffset) * sin).toNumber();
+            var strokeTipEndY = _centerY - ((length + strokeOffset) * cos).toNumber();
+            
+            // 绘制完整的描边形状：梯形主体+三角形尖端
+            var strokePointerPoints = [
+                [strokeLeftTailX, strokeLeftTailY],    // 尾部左侧
+                [strokeRightTailX, strokeRightTailY],  // 尾部右侧
+                [strokeRightMaxX, strokeRightMaxY],    // 最宽处右侧
+                [strokeTipEndX, strokeTipEndY],        // 三角形尖端
+                [strokeLeftMaxX, strokeLeftMaxY]       // 最宽处左侧
+            ];
+            dc.fillPolygon(strokePointerPoints);
         }
         
-        // 绘制白色描边圆形
-        dc.setColor(0xFFFFFF, Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(circleX, circleY, circleRadius + 1);
+        // 绘制完整的指针形状（今日配色）- 梯形主体+三角形尖端一体化
+        dc.setColor(bodyColor, Graphics.COLOR_TRANSPARENT);
+        var pointerPoints = [
+            [leftTailX, leftTailY],    // 尾部左侧（最窄）
+            [rightTailX, rightTailY],  // 尾部右侧（最窄）
+            [rightMaxX, rightMaxY],    // 最宽处右侧
+            [tipX, tipY],              // 三角形尖端
+            [leftMaxX, leftMaxY]       // 最宽处左侧
+        ];
+        dc.fillPolygon(pointerPoints);
         
-        // 绘制明日配色实心圆形
-        dc.setColor(tomorrowColor, Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(circleX, circleY, circleRadius);
+        // 绘制明日配色小指针 - 与主指针形状相同但尺寸更小，位于指针内部
+        drawTomorrowMiniPointer(dc, angle, length, width, bodyColor, tipColor, sin, cos, perpSin, perpCos);
+        
+        // 去掉指针尾部配重，保持简洁的指针设计
+    }
+    
+    /**
+     * 绘制明日配色小指针 - 菱形形状，从指针尖端向内5像素开始
+     * @param dc 绘图上下文
+     * @param angle 指针角度
+     * @param length 主指针长度
+     * @param width 主指针宽度
+     * @param bodyColor 主指针颜色（今日配色）
+     * @param tipColor 小指针颜色（明日配色）
+     * @param sin 角度正弦值
+     * @param cos 角度余弦值
+     * @param perpSin 垂直角度正弦值
+     * @param perpCos 垂直角度余弦值
+     */
+    private function drawTomorrowMiniPointer(dc as Graphics.Dc, angle as Float, length as Number, width as Number, bodyColor as Number, tipColor as Number, sin as Float, cos as Float, perpSin as Float, perpCos as Float) as Void {
+        // 始终绘制明日配色小指针，无论今日配色与明日配色是否相同
+        
+        // 小指针的尺寸参数（按主指针比例缩小六分之一）
+        var miniScale = 5.0 / 6.0; // 缩小六分之一
+        var miniLength = (length * miniScale).toNumber();
+        var miniWidth = (width * 0.4).toNumber(); // 宽度设为主指针的40%
+        
+        // 菱形小指针参数（增加50%尺寸）
+        var diamondLength = 30; // 菱形长度（从20增加到30，增加50%）
+        var diamondWidth = (miniWidth * 1.5).toNumber(); // 菱形最大宽度（增加50%）
+        var offsetFromTip = 5; // 从指针尖端向内的偏移距离
+        
+        // 计算菱形的关键点坐标
+        var centerX = _centerX;
+        var centerY = _centerY;
+        
+        // 菱形起始点（从指针尖端向内5像素）
+        var diamondStartX = _centerX + ((miniLength - offsetFromTip) * sin).toNumber();
+        var diamondStartY = _centerY - ((miniLength - offsetFromTip) * cos).toNumber();
+        
+        // 菱形结束点（向内延伸diamondLength像素）
+        var diamondEndX = _centerX + ((miniLength - offsetFromTip - diamondLength) * sin).toNumber();
+        var diamondEndY = _centerY - ((miniLength - offsetFromTip - diamondLength) * cos).toNumber();
+        
+        // 菱形中点（最宽处）
+        var diamondMidX = _centerX + ((miniLength - offsetFromTip - diamondLength/2) * sin).toNumber();
+        var diamondMidY = _centerY - ((miniLength - offsetFromTip - diamondLength/2) * cos).toNumber();
+        
+        // 计算菱形左右边界点
+        var diamondHalfWidth = diamondWidth / 2;
+        var diamondLeftX = diamondMidX + (diamondHalfWidth * perpSin).toNumber();
+        var diamondLeftY = diamondMidY - (diamondHalfWidth * perpCos).toNumber();
+        var diamondRightX = diamondMidX - (diamondHalfWidth * perpSin).toNumber();
+        var diamondRightY = diamondMidY + (diamondHalfWidth * perpCos).toNumber();
+        
+        // 根据今日配色与明日配色的关系选择边框策略
+        var borderOffset = 2;
+        var borderDiamondHalfWidth = diamondHalfWidth + borderOffset;
+        
+        // 计算边框菱形的关键点
+        var borderDiamondStartX = _centerX + ((miniLength - offsetFromTip + borderOffset) * sin).toNumber();
+        var borderDiamondStartY = _centerY - ((miniLength - offsetFromTip + borderOffset) * cos).toNumber();
+        
+        var borderDiamondEndX = _centerX + ((miniLength - offsetFromTip - diamondLength - borderOffset) * sin).toNumber();
+        var borderDiamondEndY = _centerY - ((miniLength - offsetFromTip - diamondLength - borderOffset) * cos).toNumber();
+        
+        var borderDiamondLeftX = diamondMidX + (borderDiamondHalfWidth * perpSin).toNumber();
+        var borderDiamondLeftY = diamondMidY - (borderDiamondHalfWidth * perpCos).toNumber();
+        var borderDiamondRightX = diamondMidX - (borderDiamondHalfWidth * perpSin).toNumber();
+        var borderDiamondRightY = diamondMidY + (borderDiamondHalfWidth * perpCos).toNumber();
+        
+        // 当今日配色与明日配色不同时，绘制透明边（用背景色）；相同时绘制白色边
+        var borderColor = (bodyColor != tipColor) ? 0x000000 : 0xFFFFFF;
+        dc.setColor(borderColor, Graphics.COLOR_TRANSPARENT);
+        var borderPoints = [
+            [borderDiamondStartX, borderDiamondStartY],  // 菱形头部
+            [borderDiamondLeftX, borderDiamondLeftY],    // 菱形左侧
+            [borderDiamondEndX, borderDiamondEndY],      // 菱形尾部
+            [borderDiamondRightX, borderDiamondRightY]   // 菱形右侧
+        ];
+        dc.fillPolygon(borderPoints);
+        
+        // 当今日配色与明日配色不同时，绘制白色描边
+        if (bodyColor != tipColor) {
+            var strokeOffset = 1;
+            var strokeDiamondHalfWidth = diamondHalfWidth + strokeOffset;
+            
+            var strokeDiamondStartX = _centerX + ((miniLength - offsetFromTip + strokeOffset) * sin).toNumber();
+            var strokeDiamondStartY = _centerY - ((miniLength - offsetFromTip + strokeOffset) * cos).toNumber();
+            
+            var strokeDiamondEndX = _centerX + ((miniLength - offsetFromTip - diamondLength - strokeOffset) * sin).toNumber();
+            var strokeDiamondEndY = _centerY - ((miniLength - offsetFromTip - diamondLength - strokeOffset) * cos).toNumber();
+            
+            var strokeDiamondLeftX = diamondMidX + (strokeDiamondHalfWidth * perpSin).toNumber();
+            var strokeDiamondLeftY = diamondMidY - (strokeDiamondHalfWidth * perpCos).toNumber();
+            var strokeDiamondRightX = diamondMidX - (strokeDiamondHalfWidth * perpSin).toNumber();
+            var strokeDiamondRightY = diamondMidY + (strokeDiamondHalfWidth * perpCos).toNumber();
+            
+            dc.setColor(0xFFFFFF, Graphics.COLOR_TRANSPARENT);
+            var strokePoints = [
+                [strokeDiamondStartX, strokeDiamondStartY],  // 菱形头部
+                [strokeDiamondLeftX, strokeDiamondLeftY],    // 菱形左侧
+                [strokeDiamondEndX, strokeDiamondEndY],      // 菱形尾部
+                [strokeDiamondRightX, strokeDiamondRightY]   // 菱形右侧
+            ];
+            dc.fillPolygon(strokePoints);
+        }
+        
+        // 绘制小指针主体（明日配色）- 菱形形状
+        dc.setColor(tipColor, Graphics.COLOR_TRANSPARENT);
+        var miniPointerPoints = [
+            [diamondStartX, diamondStartY],  // 菱形头部
+            [diamondLeftX, diamondLeftY],    // 菱形左侧
+            [diamondEndX, diamondEndY],      // 菱形尾部
+            [diamondRightX, diamondRightY]   // 菱形右侧
+        ];
+        dc.fillPolygon(miniPointerPoints);
+        
+        // 菱形小指针不需要配重，保持简洁的菱形设计
+    }
+    
+    /**
+     * 绘制箭头形状的辅助方法
+     */
+    private function drawArrowShape(dc as Graphics.Dc, centerX as Number, centerY as Number,
+                                   expandX as Number, expandY as Number,
+                                   maxWidthX as Number, maxWidthY as Number,
+                                   arrowBaseX as Number, arrowBaseY as Number,
+                                   tipX as Number, tipY as Number,
+                                   centerWidth as Number, expandWidth as Number, 
+                                   maxWidth as Number, arrowWidth as Number,
+                                   perpSin as Number, perpCos as Number) as Void {
+        
+        // 计算各段的左右边界点
+        var centerHalf = centerWidth / 2;
+        var expandHalf = expandWidth / 2;
+        var maxHalf = maxWidth / 2;
+        var arrowHalf = arrowWidth / 2;
+        
+        // 构建完整的箭头多边形点集
+        var points = [
+            // 左侧轮廓（从中心到箭头尖端）
+            [(centerX + (centerHalf * perpSin)).toNumber(), (centerY - (centerHalf * perpCos)).toNumber()],
+            [(expandX + (expandHalf * perpSin)).toNumber(), (expandY - (expandHalf * perpCos)).toNumber()],
+            [(maxWidthX + (maxHalf * perpSin)).toNumber(), (maxWidthY - (maxHalf * perpCos)).toNumber()],
+            [(arrowBaseX + (arrowHalf * perpSin)).toNumber(), (arrowBaseY - (arrowHalf * perpCos)).toNumber()],
+            [tipX, tipY], // 箭头尖端
+            // 右侧轮廓（从箭头尖端回到中心）
+            [(arrowBaseX - (arrowHalf * perpSin)).toNumber(), (arrowBaseY + (arrowHalf * perpCos)).toNumber()],
+            [(maxWidthX - (maxHalf * perpSin)).toNumber(), (maxWidthY + (maxHalf * perpCos)).toNumber()],
+            [(expandX - (expandHalf * perpSin)).toNumber(), (expandY + (expandHalf * perpCos)).toNumber()],
+            [(centerX - (centerHalf * perpSin)).toNumber(), (centerY + (centerHalf * perpCos)).toNumber()]
+        ];
+        
+        dc.fillPolygon(points);
     }
     
     /**
