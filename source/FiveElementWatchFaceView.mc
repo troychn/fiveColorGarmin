@@ -325,11 +325,17 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             var currentDay = today.day;
             var currentDayOfWeek = today.day_of_week;
             
+            // 调试输出：查看月份的实际值和类型
+            System.println("Debug: currentMonth = " + currentMonth.toString());
+            
             // 移除重复的weekdays定义，使用下面的硬编码版本
             
             // 格式化日期字符串 - 06/29 格式
             var monthNum = convertMonthToNumber(currentMonth);
+            System.println("Debug: monthNum after conversion = " + monthNum.toString());
             var dayNum = (currentDay != null && currentDay instanceof Number) ? currentDay : 27;
+            
+
             var monthStr = monthNum < 10 ? "0" + monthNum.toString() : monthNum.toString();
             var dayStr = dayNum < 10 ? "0" + dayNum.toString() : dayNum.toString();
             
@@ -1001,58 +1007,121 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
      * @return 月份数字 (1-12)
      */
     private function convertMonthToNumber(monthEnum) as Number {
-        if (monthEnum == null) { return 6; }
+        if (monthEnum == null) { 
+            return 6; 
+        }
         
-        // 处理已经是数字的情况
+        // 调试信息：记录原始月份数据类型和值
+        var monthType = "unknown";
+        var monthValue = "null";
+        
+        try {
+            if (monthEnum instanceof Number) {
+                monthType = "Number";
+                monthValue = monthEnum.toString();
+            } else if (monthEnum instanceof String) {
+                monthType = "String";
+                monthValue = monthEnum;
+            } else {
+                monthType = "Enum";
+                monthValue = "enum_value";
+            }
+        } catch (ex) {
+            monthType = "error";
+        }
+        
+        // 优先处理数字类型（真机环境常见）
         if (monthEnum instanceof Number) {
-            return monthEnum;
+            var numValue = monthEnum.toNumber();
+            System.println("Debug: monthEnum is Number, value = " + numValue.toString());
+            
+            // 检测月份范围并进行相应转换
+            if (numValue >= 1 && numValue <= 12) {
+                // 标准1-12范围，直接返回
+                System.println("Debug: Month in 1-12 range, using value = " + numValue.toString());
+                return numValue;
+            } else if (numValue >= 0 && numValue <= 11) {
+                // 0-11范围（真机常见），转换为1-12
+                var convertedValue = numValue + 1;
+                System.println("Debug: Converting 0-11 range to 1-12, original = " + numValue.toString() + ", converted = " + convertedValue.toString());
+                return convertedValue;
+            } else {
+                // 超出范围，使用当前系统时间的月份作为备用
+                var currentTime = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
+                var fallbackMonth = 7; // 默认7月
+                try {
+                    if (currentTime != null && currentTime.month != null) {
+                        // 递归调用自身来处理系统时间的月份
+                        fallbackMonth = convertMonthToNumber(currentTime.month);
+                    }
+                } catch (ex) {
+                    // 如果获取系统时间失败，使用默认值
+                }
+                System.println("Debug: Month value out of range (" + numValue.toString() + "), using fallback = " + fallbackMonth.toString());
+                return fallbackMonth;
+            }
         }
         
         // 处理字符串格式的月份
-         if (monthEnum instanceof String) {
-             var monthStr = monthEnum.toString();
-             if (monthStr.equals("Jan") || monthStr.equals("January")) { return 1; }
-             if (monthStr.equals("Feb") || monthStr.equals("February")) { return 2; }
-             if (monthStr.equals("Mar") || monthStr.equals("March")) { return 3; }
-             if (monthStr.equals("Apr") || monthStr.equals("April")) { return 4; }
-             if (monthStr.equals("May")) { return 5; }
-             if (monthStr.equals("Jun") || monthStr.equals("June")) { return 6; }
-             if (monthStr.equals("Jul") || monthStr.equals("July")) { return 7; }
-             if (monthStr.equals("Aug") || monthStr.equals("August")) { return 8; }
-             if (monthStr.equals("Sep") || monthStr.equals("September")) { return 9; }
-             if (monthStr.equals("Oct") || monthStr.equals("October")) { return 10; }
-             if (monthStr.equals("Nov") || monthStr.equals("November")) { return 11; }
-             if (monthStr.equals("Dec") || monthStr.equals("December")) { return 12; }
-         }
+        if (monthEnum instanceof String) {
+            var monthStr = monthEnum.toString();
+            if (monthStr.equals("Jan") || monthStr.equals("January")) { return 1; }
+            if (monthStr.equals("Feb") || monthStr.equals("February")) { return 2; }
+            if (monthStr.equals("Mar") || monthStr.equals("March")) { return 3; }
+            if (monthStr.equals("Apr") || monthStr.equals("April")) { return 4; }
+            if (monthStr.equals("May")) { return 5; }
+            if (monthStr.equals("Jun") || monthStr.equals("June")) { return 6; }
+            if (monthStr.equals("Jul") || monthStr.equals("July")) { return 7; }
+            if (monthStr.equals("Aug") || monthStr.equals("August")) { return 8; }
+            if (monthStr.equals("Sep") || monthStr.equals("September")) { return 9; }
+            if (monthStr.equals("Oct") || monthStr.equals("October")) { return 10; }
+            if (monthStr.equals("Nov") || monthStr.equals("November")) { return 11; }
+            if (monthStr.equals("Dec") || monthStr.equals("December")) { return 12; }
+            
+            // 尝试直接转换数字字符串
+            try {
+                var numFromStr = monthStr.toNumber();
+                if (numFromStr != null && numFromStr >= 1 && numFromStr <= 12) {
+                    return numFromStr;
+                }
+            } catch (ex) {
+                // 转换失败，继续其他处理
+            }
+        }
         
-        // 处理 Gregorian 月份枚举
-        switch (monthEnum) {
-            case Gregorian.MONTH_JANUARY:
-                return 1;
-            case Gregorian.MONTH_FEBRUARY:
-                return 2;
-            case Gregorian.MONTH_MARCH:
-                return 3;
-            case Gregorian.MONTH_APRIL:
-                return 4;
-            case Gregorian.MONTH_MAY:
-                return 5;
-            case Gregorian.MONTH_JUNE:
-                return 6;
-            case Gregorian.MONTH_JULY:
-                return 7;
-            case Gregorian.MONTH_AUGUST:
-                return 8;
-            case Gregorian.MONTH_SEPTEMBER:
-                return 9;
-            case Gregorian.MONTH_OCTOBER:
-                return 10;
-            case Gregorian.MONTH_NOVEMBER:
-                return 11;
-            case Gregorian.MONTH_DECEMBER:
-                return 12;
-            default:
-                return 6; // 默认6月
+        // 处理 Gregorian 月份枚举（模拟器环境常见）
+        try {
+            switch (monthEnum) {
+                case Gregorian.MONTH_JANUARY:
+                    return 1;
+                case Gregorian.MONTH_FEBRUARY:
+                    return 2;
+                case Gregorian.MONTH_MARCH:
+                    return 3;
+                case Gregorian.MONTH_APRIL:
+                    return 4;
+                case Gregorian.MONTH_MAY:
+                    return 5;
+                case Gregorian.MONTH_JUNE:
+                    return 6;
+                case Gregorian.MONTH_JULY:
+                    return 7;
+                case Gregorian.MONTH_AUGUST:
+                    return 8;
+                case Gregorian.MONTH_SEPTEMBER:
+                    return 9;
+                case Gregorian.MONTH_OCTOBER:
+                    return 10;
+                case Gregorian.MONTH_NOVEMBER:
+                    return 11;
+                case Gregorian.MONTH_DECEMBER:
+                    return 12;
+                default:
+                    return 6; // 默认6月
+            }
+        } catch (ex) {
+            // 枚举处理失败，返回默认值
+            return 6;
         }
     }
     
@@ -1899,8 +1968,8 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
         var borderDiamondRightX = diamondMidX - (borderDiamondHalfWidth * perpSin).toNumber();
         var borderDiamondRightY = diamondMidY + (borderDiamondHalfWidth * perpCos).toNumber();
         
-        // 当今日配色与明日配色不同时，绘制透明边（用背景色）；相同时绘制白色边
-        var borderColor = (bodyColor != tipColor) ? 0x000000 : 0xFFFFFF;
+        // 边框颜色逻辑：如果今日配色与明日配色都是黑色，则使用白色边框；其他情况都使用透明边框（黑色）
+        var borderColor = (bodyColor == 0x000000 && tipColor == 0x000000) ? 0xFFFFFF : 0x000000;
         dc.setColor(borderColor, Graphics.COLOR_TRANSPARENT);
         var borderPoints = [
             [borderDiamondStartX, borderDiamondStartY],  // 菱形头部
@@ -1910,8 +1979,8 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
         ];
         dc.fillPolygon(borderPoints);
         
-        // 当今日配色与明日配色不同时，绘制白色描边
-        if (bodyColor != tipColor) {
+        // 只有当今日配色与明日配色都是黑色时，才绘制白色描边
+        if (bodyColor == 0x000000 && tipColor == 0x000000) {
             var strokeOffset = 1;
             var strokeDiamondHalfWidth = diamondHalfWidth + strokeOffset;
             

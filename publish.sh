@@ -139,7 +139,7 @@ build_debug() {
 build_release() {
     print_info "编译发布版本 (IQ文件)..."
     
-    if monkeyc -f "$JUNGLE_FILE" -o "$OUTPUT_IQ" -y "$DEVELOPER_KEY" -w -r; then
+    if monkeyc -f "$JUNGLE_FILE" -o "$OUTPUT_IQ" -y "$DEVELOPER_KEY" -w -r -e; then
         print_success "发布版本编译完成: $OUTPUT_IQ"
         
         # 显示文件信息

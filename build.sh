@@ -17,6 +17,8 @@ PROJECT_NAME="FiveElementWatchFace"
 DEVELOPER_KEY="developer_key.der"
 JUNGLE_FILE="monkey.jungle"
 OUTPUT_DIR="bin"
+# 支持的设备列表
+DEVICES=("fr965" "fr255" "fr265" "fr265s" "venu3" "venu3s")
 SIMULATOR_DEVICE="fr965"
 
 # SDK路径 - 使用8.2.1版本以支持2025.7.1后的应用商店要求
@@ -148,6 +150,23 @@ start_simulator() {
 
 # 函数：部署到模拟器
 deploy_simulator() {
+    local device="${1:-$SIMULATOR_DEVICE}"
+    
+    # 检查设备是否在支持列表中
+    local device_found=false
+    for supported_device in "${DEVICES[@]}"; do
+        if [[ "$device" == "$supported_device" ]]; then
+            device_found=true
+            break
+        fi
+    done
+    
+    if [ "$device_found" = false ]; then
+        print_message $RED "错误: 设备 $device 不在支持列表中"
+        print_message $YELLOW "支持的设备: ${DEVICES[*]}"
+        exit 1
+    fi
+    
     if [ ! -f "$OUTPUT_DIR/${PROJECT_NAME}_debug.prg" ]; then
         print_message $RED "错误: 调试版本不存在，请先编译"
         exit 1
@@ -378,6 +397,25 @@ build_all() {
     print_message $BLUE "开始完整构建流程..."
     validate_project
     clean_build
+    
+    # 为所有支持的设备编译
+    print_message $BLUE "为所有支持的设备编译..."
+    
+    local success_count=0
+    local total_count=${#DEVICES[@]}
+    
+    for device in "${DEVICES[@]}"; do
+        print_message $YELLOW "编译设备: $device"
+        if monkeyc -f "$JUNGLE_FILE" -o "$OUTPUT_DIR/${PROJECT_NAME}_${device}.prg" -y "$DEVELOPER_KEY" -d "$device" -w; then
+            print_message $GREEN "设备 $device 编译成功"
+            success_count=$((success_count + 1))
+        else
+            print_message $RED "设备 $device 编译失败"
+        fi
+    done
+    
+    print_message $BLUE "设备编译完成: $success_count/$total_count 成功"
+    
     build_debug
     build_release
     start_simulator
