@@ -323,35 +323,19 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             var currentYear = today.year;
             var currentMonth = today.month;
             var currentDay = today.day;
-            var currentDayOfWeek = today.day_of_week;
-            
-            // 调试输出：查看月份的实际值和类型
-            System.println("Debug: currentMonth = " + currentMonth.toString());
-            
-            // 移除重复的weekdays定义，使用下面的硬编码版本
             
             // 格式化日期字符串 - 06/29 格式
             var monthNum = convertMonthToNumber(currentMonth);
-            System.println("Debug: monthNum after conversion = " + monthNum.toString());
             var dayNum = (currentDay != null && currentDay instanceof Number) ? currentDay : 27;
+            var yearNum = (currentYear != null && currentYear instanceof Number) ? currentYear : 2024;
             
-
             var monthStr = monthNum < 10 ? "0" + monthNum.toString() : monthNum.toString();
             var dayStr = dayNum < 10 ? "0" + dayNum.toString() : dayNum.toString();
             
-            // 星期转换 - 使用资源文件中的中文星期字符
-            var weekdays = [
-                Application.loadResource(Rez.Strings.WeekSun),
-                Application.loadResource(Rez.Strings.WeekMon),
-                Application.loadResource(Rez.Strings.WeekTue),
-                Application.loadResource(Rez.Strings.WeekWed),
-                Application.loadResource(Rez.Strings.WeekThu),
-                Application.loadResource(Rez.Strings.WeekFri),
-                Application.loadResource(Rez.Strings.WeekSat)
-            ];
-            var dayOfWeekNum = convertDayOfWeekToNumber(currentDayOfWeek);
+            // 使用修正的星期计算算法，基于2025年7月18日是星期五的基准
+            var dayOfWeekNum = calculateDayOfWeek(yearNum, monthNum, dayNum);
             var weekdayIndex = dayOfWeekNum - 1;
-            if (weekdayIndex < 0 || weekdayIndex >= weekdays.size()) {
+            if (weekdayIndex < 0 || weekdayIndex >= 7) {
                 weekdayIndex = 0; // 默认为星期日
             }
             // 绘制日期和星期在同一行，位置在时间下方，格式：06月29 星期日，整体下移20像素
@@ -1033,17 +1017,14 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
         // 优先处理数字类型（真机环境常见）
         if (monthEnum instanceof Number) {
             var numValue = monthEnum.toNumber();
-            System.println("Debug: monthEnum is Number, value = " + numValue.toString());
             
             // 检测月份范围并进行相应转换
             if (numValue >= 1 && numValue <= 12) {
                 // 标准1-12范围，直接返回
-                System.println("Debug: Month in 1-12 range, using value = " + numValue.toString());
                 return numValue;
             } else if (numValue >= 0 && numValue <= 11) {
                 // 0-11范围（真机常见），转换为1-12
                 var convertedValue = numValue + 1;
-                System.println("Debug: Converting 0-11 range to 1-12, original = " + numValue.toString() + ", converted = " + convertedValue.toString());
                 return convertedValue;
             } else {
                 // 超出范围，使用当前系统时间的月份作为备用
@@ -1057,7 +1038,6 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
                 } catch (ex) {
                     // 如果获取系统时间失败，使用默认值
                 }
-                System.println("Debug: Month value out of range (" + numValue.toString() + "), using fallback = " + fallbackMonth.toString());
                 return fallbackMonth;
             }
         }
@@ -1126,49 +1106,72 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
     }
     
     /**
-     * 将 Garmin 星期枚举或字符串转换为数字
-     * @param dayEnum Gregorian 星期枚举或字符串
+     * 使用蔡勒公式计算星期
+     * @param year 年份
+     * @param month 月份 (1-12)
+     * @param day 日期
      * @return 星期数字 (1-7, 1=周日)
      */
-    private function convertDayOfWeekToNumber(dayEnum) as Number {
-        if (dayEnum == null) { return 1; }
+    private function calculateDayOfWeek(year as Number, month as Number, day as Number) as Number {
+        // 使用基于已知基准日期的相对计算方法
+        // 基准：2025年7月18日是星期五（dayOfWeek = 6）
+        var baseYear = 2025;
+        var baseMonth = 7;
+        var baseDay = 18;
+        var baseDayOfWeek = 6; // 星期五
         
-        // 处理已经是数字的情况
-        if (dayEnum instanceof Number) {
-            return dayEnum;
+        // 计算目标日期与基准日期的天数差
+        var targetDays = calculateDaysSince1900(year, month, day);
+        var baseDays = calculateDaysSince1900(baseYear, baseMonth, baseDay);
+        var daysDiff = targetDays - baseDays;
+        
+        // 计算星期（daysDiff可能为负数）
+        var dayOfWeek = baseDayOfWeek + (daysDiff % 7);
+        
+        // 确保结果在1-7范围内
+        while (dayOfWeek <= 0) {
+            dayOfWeek += 7;
+        }
+        while (dayOfWeek > 7) {
+            dayOfWeek -= 7;
         }
         
-        // 处理字符串格式的星期
-         if (dayEnum instanceof String) {
-             var dayStr = dayEnum.toString();
-             if (dayStr.equals("Sun") || dayStr.equals("Sunday")) { return 1; }
-             if (dayStr.equals("Mon") || dayStr.equals("Monday")) { return 2; }
-             if (dayStr.equals("Tue") || dayStr.equals("Tuesday")) { return 3; }
-             if (dayStr.equals("Wed") || dayStr.equals("Wednesday")) { return 4; }
-             if (dayStr.equals("Thu") || dayStr.equals("Thursday")) { return 5; }
-             if (dayStr.equals("Fri") || dayStr.equals("Friday")) { return 6; }
-             if (dayStr.equals("Sat") || dayStr.equals("Saturday")) { return 7; }
-         }
+        return dayOfWeek;
+    }
+    
+    /**
+     * 计算指定日期距离1900年1月1日的天数
+     * @param year 年份
+     * @param month 月份
+     * @param day 日期
+     * @return 天数
+     */
+    private function calculateDaysSince1900(year as Number, month as Number, day as Number) as Number {
+        var totalDays = 0;
         
-        // 处理 Gregorian 星期枚举
-        switch (dayEnum) {
-            case Gregorian.DAY_SUNDAY:
-                return 1;
-            case Gregorian.DAY_MONDAY:
-                return 2;
-            case Gregorian.DAY_TUESDAY:
-                return 3;
-            case Gregorian.DAY_WEDNESDAY:
-                return 4;
-            case Gregorian.DAY_THURSDAY:
-                return 5;
-            case Gregorian.DAY_FRIDAY:
-                return 6;
-            case Gregorian.DAY_SATURDAY:
-                return 7;
-            default:
-                return 1; // 默认周日
+        // 计算年份贡献的天数
+        for (var y = 1900; y < year; y++) {
+            if (isLeapYear(y)) {
+                totalDays += 366;
+            } else {
+                totalDays += 365;
+            }
         }
+        
+        // 计算月份贡献的天数
+        var daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        if (isLeapYear(year)) {
+            daysInMonth[1] = 29;
+        }
+        
+        for (var m = 1; m < month; m++) {
+            totalDays += daysInMonth[m - 1];
+        }
+        
+        // 加上当月的天数
+        totalDays += day;
+        
+        return totalDays;
     }
 
     /**
