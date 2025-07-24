@@ -34,6 +34,78 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
         0xFFFFFF, // 金 - 白色
         0x0080FF  // 水 - 蓝色
     ];
+    
+    /**
+     * 获取当前五行配色方案
+     * @return 包含主色和次色的配色方案
+     */
+    private function getCurrentElementColors() as Dictionary {
+        
+        var colorSchemes = [
+            // 0 - 默认配色方案（蓝色系）
+            {
+                "backgroundColor" => Graphics.COLOR_BLACK,  // 黑色背景
+                "primaryColor" => 0x2196F3,    // 蓝色（时间刻度）
+                "secondaryColor" => 0x1565C0,  // 深蓝色
+                "mainNumbers" => 0xFFFF00,     // 黄色 (12,3,6,9)
+                "otherNumbers" => 0x2196F3     // 蓝色 (其他数字)
+            },
+            // 1 - 木元素配色方案（绿色系）
+            {
+                "backgroundColor" => Graphics.COLOR_BLACK,
+                "primaryColor" => 0x4CAF50,    // 绿色（时间刻度）
+                "secondaryColor" => 0x2E7D32,  // 深绿色
+                "mainNumbers" => 0x81C784,     // 淡绿色 (12,3,6,9)
+                "otherNumbers" => 0x4CAF50     // 绿色 (其他数字)
+            },
+            // 2 - 火元素配色方案（红色系）
+            {
+                "backgroundColor" => Graphics.COLOR_BLACK,
+                "primaryColor" => 0xF44336,    // 红色（时间刻度）
+                "secondaryColor" => 0xC62828,  // 深红色
+                "mainNumbers" => 0xFF8A80,     // 淡红色 (12,3,6,9)
+                "otherNumbers" => 0xF44336     // 红色 (其他数字)
+            },
+            // 3 - 土元素配色方案（橙黄色系）
+            {
+                "backgroundColor" => Graphics.COLOR_BLACK,
+                "primaryColor" => 0xFF9800,    // 橙色（时间刻度）
+                "secondaryColor" => 0xE65100,  // 深橙色
+                "mainNumbers" => 0xFFCC80,     // 淡橙色 (12,3,6,9)
+                "otherNumbers" => 0xFF9800     // 橙色 (其他数字)
+            },
+            // 4 - 金元素配色方案（白银色系）
+            {
+                "backgroundColor" => Graphics.COLOR_BLACK,
+                "primaryColor" => 0xFFFFFF,    // 白色（时间刻度）
+                "secondaryColor" => 0xBDBDBD,  // 灰色
+                "mainNumbers" => 0xFFFFFF,     // 白色 (12,3,6,9)
+                "otherNumbers" => 0xBDBDBD     // 灰色 (其他数字)
+            },
+            // 5 - 水元素配色方案（蓝色系）
+            {
+                "backgroundColor" => Graphics.COLOR_BLACK,
+                "primaryColor" => 0x2196F3,    // 蓝色（时间刻度）
+                "secondaryColor" => 0x1565C0,  // 深蓝色
+                "mainNumbers" => 0x90CAF9,     // 淡蓝色 (12,3,6,9)
+                "otherNumbers" => 0x2196F3     // 蓝色 (其他数字)
+            }
+        ];
+        
+        // 确保_elementIndex是有效的数字
+        var index = _elementIndex;
+        if (index == null) {
+            index = 0;
+        } else if (!(index instanceof Number)) {
+            index = 0;
+        } else if (index < 0 || index >= colorSchemes.size()) {
+            index = 0;
+        }
+        
+        var selectedScheme = colorSchemes[index];
+        
+        return selectedScheme;
+    }
 
     // 五行名称
     private var _fiveElementNames as Array<String> = ["Wood", "Fire", "Earth", "Metal", "Water"];
@@ -47,6 +119,23 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
     private var caloriesIcon as WatchUi.BitmapResource or Null = null;
     private var batteryIcon as WatchUi.BitmapResource or Null = null;
     private var weatherIcon as WatchUi.BitmapResource or Null = null;
+    
+    // 设置缓存变量
+    private var _showSteps as Boolean = true;
+    private var _showHeartRate as Boolean = true;
+    private var _showCalories as Boolean = true;
+    private var _showBattery as Boolean = true;
+    private var _showWeather as Boolean = true;
+    private var _showDateInfo as Boolean = true; // 显示日期农历星期信息
+    private var _elementIndex as Number = 0; // 五行元素索引
+    private var _timeFormat as Number = 0; // 0=24小时, 1=12小时
+    private var _brightness as Number = 50;
+    private var _colorTheme as Number = 0;
+    private var _dataDisplayMode as Number = 0;
+    private var _dataUpdateFrequency as Number = 1; // 数据更新频率
+    private var _weatherDataSource as Number = 0; // 天气数据源
+    private var _language as Number = 0; // 语言设置
+    private var _settingsLoaded as Boolean = false;
 
     /**
      * 初始化方法
@@ -54,6 +143,26 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
     function initialize() {
         try {
             WatchFace.initialize();
+            
+            // 初始化默认值
+            _showSteps = true;
+            _showHeartRate = true;
+            _showCalories = true;
+            _showBattery = true;
+            _showWeather = true;
+            _showDateInfo = true;
+            _elementIndex = 0;
+            _timeFormat = 0;
+            _brightness = 50;
+            _colorTheme = 0;
+            _dataDisplayMode = 0;
+            _dataUpdateFrequency = 1;
+            _weatherDataSource = 0;
+            _language = 0;
+            _settingsLoaded = false;
+            
+            // 加载设置
+            loadSettings();
             
             // 加载中文字体
             try {
@@ -77,10 +186,146 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
                 weatherIcon = null;
             }
             
-            // 农历算法已修复并验证
-            // testLunarAccuracy(); // 测试函数已删除
         } catch (ex) {
-            throw ex;
+            // 如果初始化失败，设置默认值
+            _showSteps = true;
+            _showHeartRate = true;
+            _showCalories = true;
+            _showBattery = true;
+            _showWeather = true;
+            _showDateInfo = true;
+            _elementIndex = 0;
+            _timeFormat = 0;
+            _brightness = 50;
+            _colorTheme = 0;
+            _dataDisplayMode = 0;
+            _dataUpdateFrequency = 1;
+            _weatherDataSource = 0;
+            _language = 0;
+            _settingsLoaded = false;
+            chineseFont = null;
+            heartIcon = null;
+            stepsIcon = null;
+            caloriesIcon = null;
+            batteryIcon = null;
+            weatherIcon = null;
+        }
+    }
+    
+    /**
+     * 加载用户设置
+     */
+    private function loadSettings() as Void {
+        try {
+            var app = Application.getApp();
+            
+            // 读取显示设置
+            var showStepsValue = app.getProperty("ShowSteps");
+            _showSteps = showStepsValue;
+            if (_showSteps == null) { 
+                _showSteps = true; 
+            }
+            
+            var showHeartRateValue = app.getProperty("ShowHeartRate");
+            _showHeartRate = showHeartRateValue;
+            if (_showHeartRate == null) { 
+                _showHeartRate = true; 
+            }
+            
+            var showCaloriesValue = app.getProperty("ShowCalories");
+            _showCalories = showCaloriesValue;
+            if (_showCalories == null) { 
+                _showCalories = true; 
+            }
+            
+            var showBatteryValue = app.getProperty("ShowBattery");
+            _showBattery = showBatteryValue;
+            if (_showBattery == null) { 
+                _showBattery = true; 
+            }
+            
+            var showWeatherValue = app.getProperty("ShowWeather");
+            _showWeather = showWeatherValue;
+            if (_showWeather == null) { 
+                _showWeather = true; 
+            }
+            
+            var showDateInfoValue = app.getProperty("ShowDateInfo");
+            _showDateInfo = showDateInfoValue;
+            if (_showDateInfo == null) { 
+                _showDateInfo = true; 
+            }
+            
+            // 读取五行元素设置
+            var elementIndexValue = app.getProperty("ElementIndex");
+            _elementIndex = elementIndexValue;
+            if (_elementIndex == null) { 
+                _elementIndex = 0; 
+            }
+            
+            // 读取格式设置
+            var timeFormatValue = app.getProperty("TimeFormat");
+            _timeFormat = timeFormatValue;
+            if (_timeFormat == null) { 
+                _timeFormat = 0; 
+            }
+            
+            var brightnessValue = app.getProperty("Brightness");
+            _brightness = brightnessValue;
+            if (_brightness == null) { 
+                _brightness = 50; 
+            }
+            
+            var colorThemeValue = app.getProperty("ColorTheme");
+            _colorTheme = colorThemeValue;
+            if (_colorTheme == null) { 
+                _colorTheme = 0; 
+            }
+            
+            var dataDisplayModeValue = app.getProperty("DataDisplayMode");
+            _dataDisplayMode = dataDisplayModeValue;
+            if (_dataDisplayMode == null) { 
+                _dataDisplayMode = 0; 
+            }
+            
+            // 读取新增设置项
+            var dataUpdateFrequencyValue = app.getProperty("DataUpdateFrequency");
+            _dataUpdateFrequency = dataUpdateFrequencyValue;
+            if (_dataUpdateFrequency == null) { 
+                _dataUpdateFrequency = 1; 
+            }
+            
+            var weatherDataSourceValue = app.getProperty("WeatherDataSource");
+            _weatherDataSource = weatherDataSourceValue;
+            if (_weatherDataSource == null) { 
+                _weatherDataSource = 0; 
+            }
+            
+            var languageValue = app.getProperty("Language");
+            _language = languageValue;
+            if (_language == null) { 
+                _language = 0; 
+            }
+            
+            _settingsLoaded = true;
+            
+        } catch (ex) {
+            // 设置加载失败时使用默认值
+            _showSteps = true;
+            _showHeartRate = true;
+            _showCalories = true;
+            _showBattery = true;
+            _showWeather = true;
+            _showDateInfo = true;
+            _elementIndex = 0;
+            _timeFormat = 0;
+            _brightness = 50;
+            _colorTheme = 0;
+            _dataDisplayMode = 0;
+            _dataUpdateFrequency = 1;
+            _weatherDataSource = 0;
+            _language = 0;
+            _settingsLoaded = false;
         }
     }
 
@@ -122,9 +367,14 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
                 _radius = (_screenWidth < _screenHeight ? _screenWidth : _screenHeight) / 2 - 10;
             }
             
+            // 重新加载设置以确保最新配置生效
+            loadSettings();
             
-            // 1. 清除屏幕为黑色背景
-            dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+            // 获取当前五行配色方案
+            var elementColors = getCurrentElementColors();
+            
+            // 1. 清除屏幕为五行配色背景
+            dc.setColor(elementColors["backgroundColor"], elementColors["backgroundColor"]);
             dc.clear();
             
             // 2. 不绘制白色圆圈边框（已去掉）
@@ -142,7 +392,6 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             
             // 7. 绘制时分秒指针
             drawWatchHands(dc);
-            
         } catch (ex) {
             // 绘制错误信息到屏幕
             try {
@@ -152,6 +401,7 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
                 dc.drawText(dc.getWidth()/2, dc.getHeight()/2, Graphics.FONT_MEDIUM, "ERROR", Graphics.TEXT_JUSTIFY_CENTER);
                 dc.drawText(dc.getWidth()/2, dc.getHeight()/2 + 40, Graphics.FONT_SMALL, ex.getErrorMessage(), Graphics.TEXT_JUSTIFY_CENTER);
             } catch (ex2) {
+                // 静默处理错误显示失败
             }
         }
     }
@@ -161,20 +411,23 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
      */
     private function drawHourMarks(dc as Graphics.Dc) as Void {
         try {
-            // 定义12个小时的颜色（根据用户需求：主要数字12、3、6、9为淡黄色，其他为蓝色）
+            // 获取当前五行配色方案
+            var elementColors = getCurrentElementColors();
+            
+            // 定义12个小时的颜色（根据用户需求：主要数字12、3、6、9为主要颜色，其他为次要颜色）
             var hourColors = [
-                0xFFFF80, // 12点 - 淡黄色
-                0x0080FF, // 1点 - 蓝色
-                0x0080FF, // 2点 - 蓝色
-                0xFFFF80, // 3点 - 淡黄色
-                0x0080FF, // 4点 - 蓝色
-                0x0080FF, // 5点 - 蓝色
-                0xFFFF80, // 6点 - 淡黄色
-                0x0080FF, // 7点 - 蓝色
-                0x0080FF, // 8点 - 蓝色
-                0xFFFF80, // 9点 - 淡黄色
-                0x0080FF, // 10点 - 蓝色
-                0x0080FF  // 11点 - 蓝色
+                elementColors["mainNumbers"], // 12点 - 主要数字颜色
+                elementColors["otherNumbers"], // 1点 - 其他数字颜色
+                elementColors["otherNumbers"], // 2点 - 其他数字颜色
+                elementColors["mainNumbers"], // 3点 - 主要数字颜色
+                elementColors["otherNumbers"], // 4点 - 其他数字颜色
+                elementColors["otherNumbers"], // 5点 - 其他数字颜色
+                elementColors["mainNumbers"], // 6点 - 主要数字颜色
+                elementColors["otherNumbers"], // 7点 - 其他数字颜色
+                elementColors["otherNumbers"], // 8点 - 其他数字颜色
+                elementColors["mainNumbers"], // 9点 - 主要数字颜色
+                elementColors["otherNumbers"], // 10点 - 其他数字颜色
+                elementColors["otherNumbers"]  // 11点 - 其他数字颜色
             ];
             
             for (var i = 0; i < 12; i++) {
@@ -240,8 +493,8 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
                 dc.drawLine(outerX, outerY, innerX, innerY);
             }
             
-            // 绘制分钟刻度 - 蓝色短刻度线
-            dc.setColor(0x0080FF, Graphics.COLOR_TRANSPARENT); // 改为蓝色
+            // 绘制分钟刻度 - 使用次要颜色短刻度线
+            dc.setColor(elementColors["secondaryColor"], Graphics.COLOR_TRANSPARENT);
             dc.setPenWidth(1); // 细线条
             
             for (var j = 0; j < 60; j++) {
@@ -306,31 +559,50 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             // dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
             // dc.drawText(_centerX, _centerY - 80, Graphics.FONT_SMALL, Application.loadResource(Rez.Strings.TodayClothingSuggestion), Graphics.TEXT_JUSTIFY_CENTER);
             
-            // 绘制大号时间 - 使用彩色，位置上移50像素
-            // 小时用绿色，分钟用黄色
+            // 绘制大号时间 - 根据设置应用时间格式
             var hour = clockTime.hour.toNumber();
             var min = clockTime.min.toNumber();
-            var hourStr = hour < 10 ? "0" + hour.toString() : hour.toString();
-            var minStr = min < 10 ? "0" + min.toString() : min.toString();
-            var timeString = hourStr + ":" + minStr;
+            var timeText = "";
             
-            // 修改时间字体为绿色，缩小字体，使用英文冒号，整体下移20像素
+            // 根据时间格式设置显示
+            if (_timeFormat == 1) { // 12小时格式
+                var displayHour = hour;
+                var ampm = "AM";
+                if (hour == 0) {
+                    displayHour = 12;
+                } else if (hour > 12) {
+                    displayHour = hour - 12;
+                    ampm = "PM";
+                } else if (hour == 12) {
+                    ampm = "PM";
+                }
+                var hourStr = displayHour.toString();
+                var minStr = min < 10 ? "0" + min.toString() : min.toString();
+                timeText = hourStr + ":" + minStr + " " + ampm;
+            } else { // 24小时格式
+                var hourStr = hour < 10 ? "0" + hour.toString() : hour.toString();
+                var minStr = min < 10 ? "0" + min.toString() : min.toString();
+                timeText = hourStr + ":" + minStr;
+            }
+            
+            // 绘制时间文本
             dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
-            var timeText = hourStr + ":" + minStr;
             dc.drawText(_centerX, _centerY - 130, Graphics.FONT_SMALL, timeText, Graphics.TEXT_JUSTIFY_CENTER);
             
-            // 确保获取正确的当前日期
-            var currentYear = today.year;
-            var currentMonth = today.month;
-            var currentDay = today.day;
-            
-            // 格式化日期字符串 - 06/29 格式
-            var monthNum = convertMonthToNumber(currentMonth);
-            var dayNum = (currentDay != null && currentDay instanceof Number) ? currentDay : 27;
-            var yearNum = (currentYear != null && currentYear instanceof Number) ? currentYear : 2024;
-            
-            var monthStr = monthNum < 10 ? "0" + monthNum.toString() : monthNum.toString();
-            var dayStr = dayNum < 10 ? "0" + dayNum.toString() : dayNum.toString();
+            // 根据设置决定是否显示日期信息
+            if (_showDateInfo) {
+                // 确保获取正确的当前日期
+                var currentYear = today.year;
+                var currentMonth = today.month;
+                var currentDay = today.day;
+                
+                // 格式化日期字符串 - 06/29 格式
+                var monthNum = convertMonthToNumber(currentMonth);
+                var dayNum = (currentDay != null && currentDay instanceof Number) ? currentDay : 27;
+                var yearNum = (currentYear != null && currentYear instanceof Number) ? currentYear : 2024;
+                
+                var monthStr = monthNum < 10 ? "0" + monthNum.toString() : monthNum.toString();
+                var dayStr = dayNum < 10 ? "0" + dayNum.toString() : dayNum.toString();
             
             // 使用修正的星期计算算法，基于2025年7月18日是星期五的基准
             var dayOfWeekNum = calculateDayOfWeek(yearNum, monthNum, dayNum);
@@ -392,31 +664,32 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
                 
                 
                 
-            } else {
-                // 如果星期获取失败，只显示日期和农历
-                var lunarDate = convertToLunar(currentYear, monthNum, dayNum);
-                
-                // 检查农历字符串是否有效
-                if (lunarDate == null || lunarDate.equals("")) {
-                    lunarDate = "农历未知";
+                } else {
+                    // 如果星期获取失败，只显示日期和农历
+                    var lunarDate = convertToLunar(currentYear, monthNum, dayNum);
+                    
+                    // 检查农历字符串是否有效
+                    if (lunarDate == null || lunarDate.equals("")) {
+                        lunarDate = "农历未知";
+                    }
+                    var fontToUse = (chineseFont != null) ? chineseFont : Graphics.FONT_TINY;
+                    
+                    var dateWidth = dc.getTextWidthInPixels(dateString, fontToUse);
+                    var lunarWidth = dc.getTextWidthInPixels(lunarDate, fontToUse);
+                    var spacing = 8;
+                    var totalWidth = dateWidth + lunarWidth + spacing;
+                    var startX = _centerX - totalWidth / 2;
+                    
+                    // 设置文本颜色为绿色，与时间保持一致
+                    dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+                    
+                    // 绘制日期
+                    dc.drawText(startX + dateWidth / 2, dateWeekY, fontToUse, dateString, Graphics.TEXT_JUSTIFY_CENTER);
+                    
+                    // 绘制农历
+                    dc.drawText(startX + dateWidth + spacing + lunarWidth / 2, dateWeekY, fontToUse, lunarDate, Graphics.TEXT_JUSTIFY_CENTER);
                 }
-                var fontToUse = (chineseFont != null) ? chineseFont : Graphics.FONT_TINY;
-                
-                var dateWidth = dc.getTextWidthInPixels(dateString, fontToUse);
-                var lunarWidth = dc.getTextWidthInPixels(lunarDate, fontToUse);
-                var spacing = 8;
-                var totalWidth = dateWidth + lunarWidth + spacing;
-                var startX = _centerX - totalWidth / 2;
-                
-                // 设置文本颜色为绿色，与时间保持一致
-                dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
-                
-                // 绘制日期
-                dc.drawText(startX + dateWidth / 2, dateWeekY, fontToUse, dateString, Graphics.TEXT_JUSTIFY_CENTER);
-                
-                // 绘制农历
-                dc.drawText(startX + dateWidth + spacing + lunarWidth / 2, dateWeekY, fontToUse, lunarDate, Graphics.TEXT_JUSTIFY_CENTER);
-            }
+            } // 结束_showDateInfo条件判断
             
             
         } catch (ex) {
@@ -476,113 +749,123 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             var batteryX = _centerX - 15; // 整体向左移动15px
             var batteryY = _centerY + 116 + verticalOffset;
             
-            // 1. 绘制心率数据 (左上方红框)
-            var heartRateValue = "--";
-            if (heartRate != null) {
-                heartRateValue = heartRate.toString();
-            }
-            
-            // 绘制心率图标 (使用SVG资源)
-            if (heartIcon != null) {
-                dc.drawBitmap(heartRateX - iconSize/2, heartRateY - 6 - iconSize/2, heartIcon as WatchUi.BitmapResource);
-            } else {
-                // 备用方案：绘制简单心形
+            // 1. 绘制心率数据 (左上方红框) - 根据设置显示
+            if (_showHeartRate) {
+                var heartRateValue = "--";
+                if (heartRate != null) {
+                    heartRateValue = heartRate.toString();
+                }
+                
+                // 绘制心率图标 (使用SVG资源)
+                if (heartIcon != null) {
+                    dc.drawBitmap(heartRateX - iconSize/2, heartRateY - 6 - iconSize/2, heartIcon as WatchUi.BitmapResource);
+                } else {
+                    // 备用方案：绘制简单心形
+                    dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+                    drawHeartIcon(dc, heartRateX, heartRateY - 8, iconSize);
+                }
+                
+                // 绘制心率数值 (使用最小字体，与图标大小匹配，颜色与心率图标一致)
                 dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
-                drawHeartIcon(dc, heartRateX, heartRateY - 8, iconSize);
+                dc.drawText(heartRateX, heartRateY + 6, Graphics.FONT_SYSTEM_XTINY, heartRateValue, Graphics.TEXT_JUSTIFY_CENTER);
             }
             
-            // 绘制心率数值 (使用最小字体，与图标大小匹配，颜色与心率图标一致)
-            dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(heartRateX, heartRateY + 6, Graphics.FONT_SYSTEM_XTINY, heartRateValue, Graphics.TEXT_JUSTIFY_CENTER);
-            
-            // 2. 绘制步数数据 (右上方红框)
-            var stepsValue = "--";
-            if (activityInfo != null && activityInfo.steps != null) {
-                stepsValue = activityInfo.steps.toString();
+            // 2. 绘制步数数据 (右上方红框) - 根据设置显示
+            if (_showSteps) {
+                var stepsValue = "--";
+                if (activityInfo != null && activityInfo.steps != null) {
+                    stepsValue = activityInfo.steps.toString();
+                }
+                
+                // 绘制步数图标 (使用SVG资源)
+                if (stepsIcon != null) {
+                    dc.drawBitmap(stepsX - iconSize/2, stepsY - 6 - iconSize/2, stepsIcon as WatchUi.BitmapResource);
+                } else {
+                    // 备用方案：绘制简单脚印
+                    dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+                    drawFootprintIcon(dc, stepsX, stepsY - 8, iconSize);
+                }
+                
+                // 绘制步数数值 (使用最小字体，与图标大小匹配，颜色与步数图标一致)
+                dc.setColor(0xFF9900, Graphics.COLOR_TRANSPARENT); // 橙色，与步数图标一致
+                dc.drawText(stepsX, stepsY + 6, Graphics.FONT_SYSTEM_XTINY, stepsValue, Graphics.TEXT_JUSTIFY_CENTER);
             }
             
-            // 绘制步数图标 (使用SVG资源)
-            if (stepsIcon != null) {
-                dc.drawBitmap(stepsX - iconSize/2, stepsY - 6 - iconSize/2, stepsIcon as WatchUi.BitmapResource);
-            } else {
-                // 备用方案：绘制简单脚印
-                dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
-                drawFootprintIcon(dc, stepsX, stepsY - 8, iconSize);
-            }
-            
-            // 绘制步数数值 (使用最小字体，与图标大小匹配，颜色与步数图标一致)
-            dc.setColor(0xFF9900, Graphics.COLOR_TRANSPARENT); // 橙色，与步数图标一致
-            dc.drawText(stepsX, stepsY + 6, Graphics.FONT_SYSTEM_XTINY, stepsValue, Graphics.TEXT_JUSTIFY_CENTER);
-            
-            // 3. 绘制卡路里数据 (左下方红框)
-            var caloriesValue = "--";
-            if (activityInfo != null && activityInfo.calories != null) {
-                caloriesValue = activityInfo.calories.toString();
-            }
-            
-            // 绘制卡路里图标 (使用SVG资源)
-            if (caloriesIcon != null) {
-                dc.drawBitmap(caloriesX - iconSize/2, caloriesY - 6 - iconSize/2, caloriesIcon as WatchUi.BitmapResource);
-            } else {
-                // 备用方案：绘制简单火焰
+            // 3. 绘制卡路里数据 (左下方红框) - 根据设置显示
+            if (_showCalories) {
+                var caloriesValue = "--";
+                if (activityInfo != null && activityInfo.calories != null) {
+                    caloriesValue = activityInfo.calories.toString();
+                }
+                
+                // 绘制卡路里图标 (使用SVG资源)
+                if (caloriesIcon != null) {
+                    dc.drawBitmap(caloriesX - iconSize/2, caloriesY - 6 - iconSize/2, caloriesIcon as WatchUi.BitmapResource);
+                } else {
+                    // 备用方案：绘制简单火焰
+                    dc.setColor(0xFF6600, Graphics.COLOR_TRANSPARENT); // 火焰色
+                    drawFireIcon(dc, caloriesX, caloriesY - 8, iconSize);
+                }
+                
+                // 绘制卡路里数值 (使用最小字体，与图标大小匹配，颜色与卡路里图标一致)
                 dc.setColor(0xFF6600, Graphics.COLOR_TRANSPARENT); // 火焰色
-                drawFireIcon(dc, caloriesX, caloriesY - 8, iconSize);
+                dc.drawText(caloriesX, caloriesY + 6, Graphics.FONT_SYSTEM_XTINY, caloriesValue, Graphics.TEXT_JUSTIFY_CENTER);
             }
             
-            // 绘制卡路里数值 (使用最小字体，与图标大小匹配，颜色与卡路里图标一致)
-            dc.setColor(0xFF6600, Graphics.COLOR_TRANSPARENT); // 火焰色
-            dc.drawText(caloriesX, caloriesY + 6, Graphics.FONT_SYSTEM_XTINY, caloriesValue, Graphics.TEXT_JUSTIFY_CENTER);
-            
-            // 4. 绘制天气数据 (右下方红框)
-            // 注意：Garmin Connect IQ SDK不直接提供天气数据，这里使用模拟数据
-            var weatherData = getWeatherData();
-        // 格式化温度显示，避免过多小数位
-        var temperature = weatherData[:temperature];
-        var weatherValue;
-        if (temperature instanceof Float || temperature instanceof Double) {
-            // 四舍五入到整数
-            weatherValue = Math.round(temperature).toNumber().toString() + "°";
-        } else {
-            weatherValue = temperature.toString() + "°";
-        }
-        var weatherCondition = weatherData[:condition]; // 可以是：sunny, cloudy, rainy, snowy等
-            
-            // 绘制天气图标 (使用SVG资源)
-            if (weatherIcon != null) {
-                dc.drawBitmap(weatherX - iconSize/2, weatherY - 6 - iconSize/2, weatherIcon as WatchUi.BitmapResource);
-            } else {
-                // 备用方案：绘制简单天气图标
-                drawWeatherIcon(dc, weatherX, weatherY - 8, iconSize, weatherCondition);
+            // 4. 绘制天气数据 (右下方红框) - 根据设置显示
+            if (_showWeather) {
+                // 注意：Garmin Connect IQ SDK不直接提供天气数据，这里使用模拟数据
+                var weatherData = getWeatherData();
+                // 格式化温度显示，避免过多小数位
+                var temperature = weatherData[:temperature];
+                var weatherValue;
+                if (temperature instanceof Float || temperature instanceof Double) {
+                    // 四舍五入到整数
+                    weatherValue = Math.round(temperature).toNumber().toString() + "°";
+                } else {
+                    weatherValue = temperature.toString() + "°";
+                }
+                var weatherCondition = weatherData[:condition]; // 可以是：sunny, cloudy, rainy, snowy等
+                
+                // 绘制天气图标 (使用SVG资源)
+                if (weatherIcon != null) {
+                    dc.drawBitmap(weatherX - iconSize/2, weatherY - 6 - iconSize/2, weatherIcon as WatchUi.BitmapResource);
+                } else {
+                    // 备用方案：绘制简单天气图标
+                    drawWeatherIcon(dc, weatherX, weatherY - 8, iconSize, weatherCondition);
+                }
+                
+                // 绘制天气数值 (使用最小字体，与图标大小匹配，颜色与天气图标一致)
+                dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(weatherX, weatherY + 6, Graphics.FONT_SYSTEM_XTINY, weatherValue, Graphics.TEXT_JUSTIFY_CENTER);
             }
             
-            // 绘制天气数值 (使用最小字体，与图标大小匹配，颜色与天气图标一致)
-            dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(weatherX, weatherY + 6, Graphics.FONT_SYSTEM_XTINY, weatherValue, Graphics.TEXT_JUSTIFY_CENTER);
-            
-            // 5. 绘制电量数据 (底部中间长方形)
-            var batteryValue = "--";
-            if (systemStats != null && systemStats.battery != null) {
-                var battery = systemStats.battery.toNumber();
-                batteryValue = battery.toString() + "%";
-            }
-            
-            // 绘制电池图标 (平躺) - 精确控制间距
-            // 重新设计布局：图标右边缘到文字左边缘的间距最小化
-            var batteryIconX = batteryX - iconSize; // 图标完全位于batteryX左侧
-            var batteryTextX = batteryX; // 文字紧贴batteryX，实现最小间距
-            
-            // 绘制电池图标 (使用SVG资源)
-            if (batteryIcon != null) {
-                dc.drawBitmap(batteryIconX, batteryY - iconSize/2, batteryIcon as WatchUi.BitmapResource);
-            } else {
-                // 备用方案：绘制简单电池图标
+            // 5. 绘制电量数据 (底部中间长方形) - 根据设置显示
+            if (_showBattery) {
+                var batteryValue = "--";
+                if (systemStats != null && systemStats.battery != null) {
+                    var battery = systemStats.battery.toNumber();
+                    batteryValue = battery.toString() + "%";
+                }
+                
+                // 绘制电池图标 (平躺) - 精确控制间距
+                // 重新设计布局：图标右边缘到文字左边缘的间距最小化
+                var batteryIconX = batteryX - iconSize; // 图标完全位于batteryX左侧
+                var batteryTextX = batteryX; // 文字紧贴batteryX，实现最小间距
+                
+                // 绘制电池图标 (使用SVG资源)
+                if (batteryIcon != null) {
+                    dc.drawBitmap(batteryIconX, batteryY - iconSize/2, batteryIcon as WatchUi.BitmapResource);
+                } else {
+                    // 备用方案：绘制简单电池图标
+                    dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+                    drawBatteryIcon(dc, batteryIconX, batteryY, iconSize);
+                }
+                
+                // 绘制电量数值 (使用最小字体，与图标大小匹配)
                 dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
-                drawBatteryIcon(dc, batteryIconX, batteryY, iconSize);
+                dc.drawText(batteryTextX, batteryY, Graphics.FONT_SYSTEM_XTINY, batteryValue, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
             }
-            
-            // 绘制电量数值 (使用最小字体，与图标大小匹配)
-            dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(batteryTextX, batteryY, Graphics.FONT_SYSTEM_XTINY, batteryValue, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
             
         } catch (ex) {
         }

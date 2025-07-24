@@ -4,40 +4,12 @@
     <!-- 五行元素选择 -->
     <setting propertyKey="@Properties.ElementIndex" title="@Strings.FiveElementColor">
         <settingConfig type="list">
-            <listEntry value="0">@Strings.ElementWood</listEntry>
-            <listEntry value="1">@Strings.ElementFire</listEntry>
-            <listEntry value="2">@Strings.ElementEarth</listEntry>
-            <listEntry value="3">@Strings.ElementMetal</listEntry>
-            <listEntry value="4">@Strings.ElementWater</listEntry>
-        </settingConfig>
-    </setting>
-    
-    <!-- 数据显示模式 -->
-    <setting propertyKey="@Properties.DataDisplayMode" title="@Strings.DataDisplay">
-        <settingConfig type="list">
-            <listEntry value="0">@Strings.DisplayModeStandard</listEntry>
-            <listEntry value="1">@Strings.DisplayModeSimple</listEntry>
-            <listEntry value="2">@Strings.DisplayModeDetailed</listEntry>
-        </settingConfig>
-    </setting>
-    
-    <!-- 颜色主题 -->
-    <setting propertyKey="@Properties.ColorTheme" title="@Strings.ColorTheme">
-        <settingConfig type="list">
-            <listEntry value="0">@Strings.ThemeClassic</listEntry>
-            <listEntry value="1">@Strings.ThemeModern</listEntry>
-            <listEntry value="2">@Strings.ThemeMinimal</listEntry>
-        </settingConfig>
-    </setting>
-    
-    <!-- 亮度调节 -->
-    <setting propertyKey="@Properties.Brightness" title="@Strings.Brightness">
-        <settingConfig type="list">
-            <listEntry value="10">10%</listEntry>
-            <listEntry value="25">25%</listEntry>
-            <listEntry value="50">50%</listEntry>
-            <listEntry value="75">75%</listEntry>
-            <listEntry value="100">100%</listEntry>
+            <listEntry value="0">默认</listEntry>
+            <listEntry value="1">@Strings.ElementWood</listEntry>
+            <listEntry value="2">@Strings.ElementFire</listEntry>
+            <listEntry value="3">@Strings.ElementEarth</listEntry>
+            <listEntry value="4">@Strings.ElementMetal</listEntry>
+            <listEntry value="5">@Strings.ElementWater</listEntry>
         </settingConfig>
     </setting>
     
@@ -66,173 +38,44 @@
         <settingConfig type="boolean"/>
     </setting>
     
-    <!-- 显示配色建议 -->
-    <setting propertyKey="@Properties.ShowClothingSuggestion" title="配色建议">
-        <settingConfig type="boolean"/>
-    </setting>
-    
     <!-- 时间格式 -->
-    <setting propertyKey="@Properties.TimeFormat" title="时间格式">
+    <setting propertyKey="@Properties.TimeFormat" title="@Strings.TimeFormat">
         <settingConfig type="list">
-            <listEntry value="0">@Strings.TimeFormat24</listEntry>
-            <listEntry value="1">@Strings.TimeFormat12</listEntry>
+            <listEntry value="0">24小时制</listEntry>
+            <listEntry value="1">12小时制</listEntry>
         </settingConfig>
     </setting>
     
-    <!-- 日期显示 -->
-    <setting propertyKey="@Properties.ShowDate" title="显示日期">
+    <!-- 日期农历星期显示 -->
+    <setting propertyKey="@Properties.ShowDateInfo" title="日期-农历-星期">
         <settingConfig type="boolean"/>
-    </setting>
-    
-    <!-- 秒针显示 -->
-    <setting propertyKey="@Properties.ShowSeconds" title="显示秒针">
-        <settingConfig type="boolean"/>
-    </setting>
-    
-    <!-- 数字时标 -->
-    <setting propertyKey="@Properties.ShowNumbers" title="显示数字">
-        <settingConfig type="boolean"/>
-    </setting>
-    
-    <!-- 时标样式 -->
-    <setting propertyKey="@Properties.TickStyle" title="时标样式">
-        <settingConfig type="list">
-            <listEntry value="0">简单</listEntry>
-            <listEntry value="1">详细</listEntry>
-            <listEntry value="2">无</listEntry>
-        </settingConfig>
-    </setting>
-    
-    <!-- 指针样式 -->
-    <setting propertyKey="@Properties.HandStyle" title="指针样式">
-        <settingConfig type="list">
-            <listEntry value="0">经典</listEntry>
-            <listEntry value="1">现代</listEntry>
-            <listEntry value="2">简约</listEntry>
-        </settingConfig>
-    </setting>
-    
-    <!-- 背景样式 -->
-    <setting propertyKey="@Properties.BackgroundStyle" title="背景样式">
-        <settingConfig type="list">
-            <listEntry value="0">纯色</listEntry>
-            <listEntry value="1">渐变</listEntry>
-            <listEntry value="2">纹理</listEntry>
-        </settingConfig>
-    </setting>
-    
-    <!-- 五行圆环显示 -->
-    <setting propertyKey="@Properties.ShowFiveElementRing" title="五行圆环">
-        <settingConfig type="boolean"/>
-    </setting>
-    
-    <!-- 五行圆环位置 -->
-    <setting propertyKey="@Properties.FiveElementRingPosition" title="圆环位置">
-        <settingConfig type="list">
-            <listEntry value="0">顶部</listEntry>
-            <listEntry value="1">中心</listEntry>
-            <listEntry value="2">底部</listEntry>
-        </settingConfig>
-    </setting>
-    
-    <!-- 数据位置 -->
-    <setting propertyKey="@Properties.DataPosition" title="数据位置">
-        <settingConfig type="list">
-            <listEntry value="0">标准</listEntry>
-            <listEntry value="1">紧凑</listEntry>
-            <listEntry value="2">分散</listEntry>
-        </settingConfig>
-    </setting>
-    
-    <!-- 字体大小 -->
-    <setting propertyKey="@Properties.FontSize" title="字体大小">
-        <settingConfig type="list">
-            <listEntry value="0">小</listEntry>
-            <listEntry value="1">中</listEntry>
-            <listEntry value="2">大</listEntry>
-        </settingConfig>
-    </setting>
-    
-    <!-- 振动反馈 -->
-    <setting propertyKey="@Properties.VibrateOnInteraction" title="触觉反馈">
-        <settingConfig type="boolean"/>
-    </setting>
-    
-    <!-- 自动切换五行 -->
-    <setting propertyKey="@Properties.AutoSwitchElement" title="自动切换五行">
-        <settingConfig type="boolean"/>
-    </setting>
-    
-    <!-- 自动切换间隔 -->
-    <setting propertyKey="@Properties.AutoSwitchInterval" title="切换间隔（小时）">
-        <settingConfig type="list">
-            <listEntry value="1">1小时</listEntry>
-            <listEntry value="2">2小时</listEntry>
-            <listEntry value="4">4小时</listEntry>
-            <listEntry value="6">6小时</listEntry>
-            <listEntry value="8">8小时</listEntry>
-            <listEntry value="12">12小时</listEntry>
-            <listEntry value="24">24小时</listEntry>
-        </settingConfig>
-    </setting>
-    
-    <!-- 省电模式 -->
-    <setting propertyKey="@Properties.PowerSaveMode" title="省电模式">
-        <settingConfig type="boolean"/>
-    </setting>
-    
-    <!-- 夜间模式 -->
-    <setting propertyKey="@Properties.NightMode" title="夜间模式">
-        <settingConfig type="boolean"/>
-    </setting>
-    
-    <!-- 夜间模式开始时间 -->
-    <setting propertyKey="@Properties.NightModeStartTime" title="夜间模式开始">
-        <settingConfig type="list">
-            <listEntry value="18">18:00</listEntry>
-            <listEntry value="19">19:00</listEntry>
-            <listEntry value="20">20:00</listEntry>
-            <listEntry value="21">21:00</listEntry>
-            <listEntry value="22">22:00</listEntry>
-        </settingConfig>
-    </setting>
-    
-    <!-- 夜间模式结束时间 -->
-    <setting propertyKey="@Properties.NightModeEndTime" title="夜间模式结束">
-        <settingConfig type="list">
-            <listEntry value="6">06:00</listEntry>
-            <listEntry value="7">07:00</listEntry>
-            <listEntry value="8">08:00</listEntry>
-            <listEntry value="9">09:00</listEntry>
-            <listEntry value="10">10:00</listEntry>
-        </settingConfig>
     </setting>
     
     <!-- 数据更新频率 -->
-    <setting propertyKey="@Properties.DataUpdateFrequency" title="数据更新频率">
+    <setting propertyKey="@Properties.DataUpdateFrequency" title="@Strings.DataUpdateFrequency">
         <settingConfig type="list">
-            <listEntry value="0">实时</listEntry>
-            <listEntry value="1">每分钟</listEntry>
-            <listEntry value="2">每5分钟</listEntry>
-            <listEntry value="3">每15分钟</listEntry>
+            <listEntry value="0">@Strings.UpdateRealTime</listEntry>
+            <listEntry value="1">@Strings.UpdateEveryMinute</listEntry>
+            <listEntry value="2">@Strings.UpdateEvery5Minutes</listEntry>
+            <listEntry value="3">@Strings.UpdateEvery15Minutes</listEntry>
         </settingConfig>
     </setting>
     
     <!-- 天气数据源 -->
-    <setting propertyKey="@Properties.WeatherDataSource" title="天气数据源">
+    <setting propertyKey="@Properties.WeatherDataSource" title="@Strings.WeatherDataSource">
         <settingConfig type="list">
-            <listEntry value="0">系统默认</listEntry>
-            <listEntry value="1">Connect IQ</listEntry>
-            <listEntry value="2">手机同步</listEntry>
+            <listEntry value="0">@Strings.WeatherSystemDefault</listEntry>
+            <listEntry value="1">@Strings.WeatherConnectIQ</listEntry>
+            <listEntry value="2">@Strings.WeatherPhoneSync</listEntry>
         </settingConfig>
     </setting>
     
     <!-- 语言设置 -->
-    <setting propertyKey="@Properties.Language" title="语言">
+    <setting propertyKey="@Properties.Language" title="@Strings.Language">
         <settingConfig type="list">
-            <listEntry value="0">中文</listEntry>
-            <listEntry value="1">English</listEntry>
-            <listEntry value="2">自动</listEntry>
+            <listEntry value="0">@Strings.LanguageChinese</listEntry>
+            <listEntry value="1">@Strings.LanguageEnglish</listEntry>
+            <listEntry value="2">@Strings.LanguageAuto</listEntry>
         </settingConfig>
     </setting>
 </settings>

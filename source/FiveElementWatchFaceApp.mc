@@ -39,13 +39,7 @@ class FiveElementWatchFaceApp extends Application.AppBase {
         return [view, delegate];
     }
 
-    /**
-     * 获取设置视图
-     * @return 设置视图数组
-     */
-    function getSettingsView() {
-        return [ new FiveElementSettingsView(), new FiveElementSettingsDelegate() ];
-    }
+    // 移除了手表端设置功能，所有设置通过Connect IQ应用进行
 
     /**
      * 应用程序设置更改时调用

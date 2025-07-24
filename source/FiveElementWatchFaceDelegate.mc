@@ -124,19 +124,7 @@ class FiveElementWatchFaceDelegate extends WatchUi.WatchFaceDelegate {
         return false;
     }
 
-    /**
-     * 处理菜单事件
-     * @return 是否处理了事件
-     */
-    function onMenu() as Lang.Boolean {
-        // 打开设置菜单
-        WatchUi.pushView(
-            new FiveElementSettingsView(),
-            new FiveElementSettingsDelegate(),
-            WatchUi.SLIDE_UP
-        );
-        return true;
-    }
+    // 移除了手表端设置功能，所有设置通过Connect IQ应用进行
 
     /**
      * 检测是否点击在五行配色区域

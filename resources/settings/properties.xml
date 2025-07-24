@@ -24,6 +24,7 @@
     <!-- 时间和日期设置 -->
     <property id="TimeFormat" type="number">0</property> <!-- 0=24小时, 1=12小时 -->
     <property id="ShowDate" type="boolean">true</property>
+    <property id="ShowDateInfo" type="boolean">true</property> <!-- 显示日期农历星期信息 -->
     <property id="ShowSeconds" type="boolean">false</property>
     
     <!-- 表盘元素显示 -->

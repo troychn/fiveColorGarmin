@@ -131,6 +131,7 @@
     <string id="WeatherError">Weather data fetch failed</string>
     
     <!-- Time Format -->
+    <string id="TimeFormat">Time Format</string>
     <string id="TimeFormat24">24-hour format</string>
     <string id="TimeFormat12">12-hour format</string>
     <string id="AM">AM</string>
@@ -163,6 +164,25 @@
     <string id="Off">Off</string>
     <string id="Enabled">Enabled</string>
     <string id="Disabled">Disabled</string>
+    
+    <!-- Data Update Settings -->
+    <string id="DataUpdateFrequency">Data Update Frequency</string>
+    <string id="UpdateRealTime">Real-time</string>
+    <string id="UpdateEveryMinute">Every minute</string>
+    <string id="UpdateEvery5Minutes">Every 5 minutes</string>
+    <string id="UpdateEvery15Minutes">Every 15 minutes</string>
+    
+    <!-- Weather Data Source -->
+    <string id="WeatherDataSource">Weather Data Source</string>
+    <string id="WeatherSystemDefault">System Default</string>
+    <string id="WeatherConnectIQ">Connect IQ</string>
+    <string id="WeatherPhoneSync">Phone Sync</string>
+    
+    <!-- Language Settings -->
+    <string id="Language">Language</string>
+    <string id="LanguageChinese">中文</string>
+    <string id="LanguageEnglish">English</string>
+    <string id="LanguageAuto">Auto</string>
     
     <!-- Version Information -->
     <string id="Version">Version</string>
