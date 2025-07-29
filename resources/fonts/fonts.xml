@@ -1,3 +1,4 @@
 <fonts>
     <font id="chinese_font" filename="chinese_font.fnt" filter="0123456789:一二三四五六七八九十日星期周天月年时分秒上午下午正二三四五六七八九十初廿卅八闰冬腊十一十二十三十四十五十六十七十八十九二十廿一廿二廿三廿四廿五廿六廿七廿八廿九三十" />
+    <font id="chinese_font_small" filename="chinese_font_small.fnt" filter="0123456789:一二三四五六七八九十日星期周天月年时分秒上午下午正二三四五六七八九十初廿卅八闰冬腊十一十二十三十四十五十六十七十八十九二十廿一廿二廿三廿四廿五廿六廿七廿八廿九三十" />
 </fonts>

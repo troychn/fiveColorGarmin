@@ -25,6 +25,11 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
 
     // 使用系统字体显示图标字符
     // private var _iconFont as WatchUi.FontResource or Null = null;
+    
+    // FR255专用组件
+    private var _deviceAdapter as DeviceAdapter or Null = null;
+    private var _fr255Renderer as FR255Renderer or Null = null;
+    private var _isFR255Device as Boolean = false;
 
     // 五行颜色定义
     private var _fiveElementColors as Array<Number> = [
@@ -343,6 +348,18 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             _centerY = (_screenHeight / 2).toNumber();
             _radius = (_screenWidth < _screenHeight ? _screenWidth : _screenHeight) / 2 - 10;
             
+            // 设备检测和FR255专用组件初始化
+            _isFR255Device = (_screenWidth == 260 && _screenHeight == 260);
+            
+            if (_isFR255Device) {
+                // 初始化FR255专用组件
+                _deviceAdapter = new DeviceAdapter();
+                _deviceAdapter.setup(_screenWidth, _screenHeight);
+                
+                _fr255Renderer = new FR255Renderer();
+                _fr255Renderer.setup(_deviceAdapter, _centerX, _centerY, _radius, _screenWidth, _screenHeight);
+            }
+            
         } catch (ex) {
             throw ex;
         }
@@ -353,7 +370,7 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
     }
 
     /**
-     * 表盘更新方法 - 完整五行表盘
+     * 表盘更新方法 - 支持FR255和FR965设备
      * @param dc 绘图上下文
      */
     public function onUpdate(dc as Graphics.Dc) as Void {
@@ -365,6 +382,18 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
                 _centerX = (_screenWidth / 2).toNumber();
                 _centerY = (_screenHeight / 2).toNumber();
                 _radius = (_screenWidth < _screenHeight ? _screenWidth : _screenHeight) / 2 - 10;
+                
+                // 重新检测设备类型
+                _isFR255Device = (_screenWidth == 260 && _screenHeight == 260);
+                
+                if (_isFR255Device && (_deviceAdapter == null || _fr255Renderer == null)) {
+                    // 延迟初始化FR255组件
+                    _deviceAdapter = new DeviceAdapter();
+                    _deviceAdapter.setup(_screenWidth, _screenHeight);
+                    
+                    _fr255Renderer = new FR255Renderer();
+                    _fr255Renderer.setup(_deviceAdapter, _centerX, _centerY, _radius, _screenWidth, _screenHeight);
+                }
             }
             
             // 重新加载设置以确保最新配置生效
@@ -373,25 +402,14 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             // 获取当前五行配色方案
             var elementColors = getCurrentElementColors();
             
-            // 1. 清除屏幕为五行配色背景
-            dc.setColor(elementColors["backgroundColor"], elementColors["backgroundColor"]);
-            dc.clear();
-            
-            // 2. 不绘制白色圆圈边框（已去掉）
-            
-            // 3. 绘制时间刻度
-            drawHourMarks(dc);
-            
-            // 5. 移除重复的时间显示 - 时间将在drawCenterTimeInfo中绘制
-            
-            // 5. 绘制中心时间和日期信息
-            drawCenterTimeInfo(dc);
-            
-            // 6. 绘制健康数据信息
-            drawHealthData(dc);
-            
-            // 7. 绘制时分秒指针
-            drawWatchHands(dc);
+            // 设备特定渲染路径
+            if (_isFR255Device && _fr255Renderer != null) {
+                // FR255专用渲染路径
+                renderFR255WatchFace(dc, elementColors);
+            } else {
+                // FR965原始渲染路径（保持不变）
+                renderFR965WatchFace(dc, elementColors);
+            }
         } catch (ex) {
             // 绘制错误信息到屏幕
             try {
@@ -404,6 +422,43 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
                 // 静默处理错误显示失败
             }
         }
+    }
+
+    /**
+     * FR255专用渲染方法
+     * @param dc 绘图上下文
+     * @param elementColors 五行配色方案
+     */
+    private function renderFR255WatchFace(dc as Graphics.Dc, elementColors as Dictionary) as Void {
+        // 使用FR255专用渲染器
+        _fr255Renderer.renderWatchFace(dc, elementColors);
+    }
+
+    /**
+     * FR965原始渲染方法（保持不变）
+     * @param dc 绘图上下文
+     * @param elementColors 五行配色方案
+     */
+    private function renderFR965WatchFace(dc as Graphics.Dc, elementColors as Dictionary) as Void {
+        // 1. 清除屏幕为五行配色背景
+        dc.setColor(elementColors["backgroundColor"], elementColors["backgroundColor"]);
+        dc.clear();
+        
+        // 2. 不绘制白色圆圈边框（已去掉）
+        
+        // 3. 绘制时间刻度
+        drawHourMarks(dc);
+        
+        // 5. 移除重复的时间显示 - 时间将在drawCenterTimeInfo中绘制
+        
+        // 5. 绘制中心时间和日期信息
+        drawCenterTimeInfo(dc);
+        
+        // 6. 绘制健康数据信息
+        drawHealthData(dc);
+        
+        // 7. 绘制时分秒指针
+        drawWatchHands(dc);
     }
 
     /**
