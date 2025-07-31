@@ -352,10 +352,31 @@ monkeyc --version
 
 **生成开发者密钥:**
 
+开发者密钥是 Garmin Connect IQ 开发的必需文件，用于应用签名和发布。
+
 ```bash
-# 使用SDK工具生成密钥
+# 方法1: 使用 OpenSSL 生成（推荐）
+# 生成 RSA 私钥
+openssl genrsa -out developer_key.pem 4096
+
+# 转换为 DER 格式（Garmin Connect IQ 所需格式）
+openssl rsa -in developer_key.pem -outform DER -out developer_key.der
+
+# 验证生成的文件
+ls -la developer_key.*
+```
+
+```bash
+# 方法2: 使用 SDK 工具生成（备选）
 monkeyc -g developer_key.der
 ```
+
+**重要说明：**
+- `developer_key.der` 文件必须放在项目根目录
+- 密钥文件已设置适当权限（600，仅所有者可读写）
+- **请勿将密钥文件提交到公共代码仓库**
+- 建议将 `developer_key.*` 添加到 `.gitignore` 文件中
+- 如果缺少此文件，运行模拟器时会报错：`缺少必要文件: developer_key.der`
 
 #### 3. 项目配置
 
@@ -662,6 +683,21 @@ var customSetting = Application.Properties.getValue("CustomSetting");
 项目提供了自动化的构建脚本 `publish.sh`，大大简化了编译和测试流程。
 
 ### 快速开始
+
+**⚠️ 首次使用前置条件：**
+
+在开始编译之前，请确保已生成开发者密钥文件：
+
+```bash
+# 生成开发者密钥（仅需执行一次）
+openssl genrsa -out developer_key.pem 4096
+openssl rsa -in developer_key.pem -outform DER -out developer_key.der
+
+# 验证密钥文件
+ls -la developer_key.der
+```
+
+如果缺少此文件，运行编译命令时会报错：`缺少必要文件: developer_key.der`
 
 **一键编译所有版本：**
 ```bash
@@ -1126,6 +1162,30 @@ monkeyc -d <device_type> -f monkey.jungle -o release/FiveElementWatchFace.iq -y 
 - ❌ **设备不支持**: 确认目标设备在支持列表中
 - ❌ **资源文件缺失**: 检查 `resources` 目录完整性
 - ❌ **密钥问题**: 确保开发者密钥正确生成和配置
+
+**密钥文件问题（常见）：**
+
+- 🔑 **缺少必要文件: developer_key.der**
+  ```bash
+  # 解决方案：生成开发者密钥
+  openssl genrsa -out developer_key.pem 4096
+  openssl rsa -in developer_key.pem -outform DER -out developer_key.der
+  ```
+
+- 🔑 **密钥格式错误**
+  ```bash
+  # 检查文件是否存在且格式正确
+  ls -la developer_key.der
+  file developer_key.der  # 应显示 "data"
+  ```
+
+- 🔑 **权限问题**
+  ```bash
+  # 设置正确的文件权限
+  chmod 600 developer_key.der
+  ```
+
+- 🔑 **路径问题**: 确保 `developer_key.der` 文件位于项目根目录
 
 **运行时错误：**
 
