@@ -725,8 +725,8 @@ deploy_fr265s_debug_to_simulator() {
         sleep 5
     fi
     
-    # 部署到模拟器
-    if monkeydo "$fr265s_debug_prg" fr265s; then
+    # 部署到模拟器（禁用日志输出）
+    if monkeydo "$fr265s_debug_prg" fr265s > /dev/null 2>&1; then
         print_success "FR265S调试版本已部署到模拟器"
     else
         print_error "FR265S调试版本部署到模拟器失败"

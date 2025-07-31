@@ -104,15 +104,15 @@ class FR265SRenderer {
      * @param elementColors 配色方案
      */
     private function drawFR265SBackground(dc as Graphics.Dc, elementColors as Dictionary) as Void {
-        System.println("[FR265S] 开始绘制背景");
-        System.println("[FR265S] 背景颜色: " + elementColors["backgroundColor"]);
-        System.println("[FR265S] 中心坐标: (" + centerX + ", " + centerY + "), 半径: " + radius);
+        // System.println("[FR265S] 开始绘制背景");
+        // System.println("[FR265S] 背景颜色: " + elementColors["backgroundColor"]);
+        // System.println("[FR265S] 中心坐标: (" + centerX + ", " + centerY + "), 半径: " + radius);
         
         // 使用FR965的背景绘制逻辑 - 不绘制白色圆圈边框（与FR965保持一致）
         dc.setColor(elementColors["backgroundColor"], elementColors["backgroundColor"]);
         dc.clear();
         
-        System.println("[FR265S] 背景绘制完成，已移除白色边框");
+        // System.println("[FR265S] 背景绘制完成，已移除白色边框");
     }
     
     /**
@@ -162,7 +162,7 @@ class FR265SRenderer {
         var numberRadius = radius - 40;
         var font = Graphics.FONT_SMALL; // 从FONT_MEDIUM改为FONT_SMALL，进一步缩小字体
         
-        System.println("[FR265S] 绘制小时数字，使用字体: FONT_SMALL");
+        // System.println("[FR265S] 绘制小时数字，使用字体: FONT_SMALL");
         
         for (var i = 1; i <= 12; i++) {
             var angle = (i * 30.0 - 90.0) * Math.PI / 180.0; // 12点为0度
@@ -177,7 +177,7 @@ class FR265SRenderer {
             dc.drawText(x, y, font, i.toString(), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
         }
         
-        System.println("[FR265S] 小时数字绘制完成");
+        // System.println("[FR265S] 小时数字绘制完成");
     }
     
     /**
@@ -249,7 +249,7 @@ class FR265SRenderer {
             // 4. 绘制天气数据 (右下方)
             var weatherData = getWeatherData();
             
-            System.println("[FR265S] 天气数据: " + weatherData);
+            // System.println("[FR265S] 天气数据: " + weatherData);
             
             // 格式化温度显示
             var temperature = weatherData[:temperature];
@@ -269,10 +269,10 @@ class FR265SRenderer {
             // 确保weatherCondition不为null
             if (weatherCondition == null) {
                 weatherCondition = Weather.CONDITION_CLEAR;
-                System.println("[FR265S] 天气条件为null，使用默认晴天");
+                // System.println("[FR265S] 天气条件为null，使用默认晴天");
             }
             
-            System.println("[FR265S] 最终天气条件: " + weatherCondition + ", 温度: " + weatherValue);
+            // System.println("[FR265S] 最终天气条件: " + weatherCondition + ", 温度: " + weatherValue);
             
             // 绘制天气图标
             dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
@@ -310,14 +310,14 @@ class FR265SRenderer {
      * @param elementColors 配色方案
      */
     private function drawFR265SDateInfo(dc as Graphics.Dc, clockTime as Time.Moment, elementColors as Dictionary) as Void {
-        System.println("[FR265S] 开始绘制中心时间和日期信息");
+        // System.println("[FR265S] 开始绘制中心时间和日期信息");
         
         try {
             var clockTimeInfo = System.getClockTime();
             var today = Gregorian.info(clockTime, Time.FORMAT_MEDIUM);
             
-            System.println("[FR265S] 获取时间信息: " + clockTimeInfo.hour + ":" + clockTimeInfo.min + ":" + clockTimeInfo.sec);
-            System.println("[FR265S] 获取日期信息: " + today.year + "-" + today.month + "-" + today.day);
+            // System.println("[FR265S] 获取时间信息: " + clockTimeInfo.hour + ":" + clockTimeInfo.min + ":" + clockTimeInfo.sec);
+            // System.println("[FR265S] 获取日期信息: " + today.year + "-" + today.month + "-" + today.day);
             
             // 绘制大号时间 - 24小时格式
             var hour = clockTimeInfo.hour.toNumber();
@@ -326,28 +326,28 @@ class FR265SRenderer {
             var minStr = min < 10 ? "0" + min.toString() : min.toString();
             var timeText = hourStr + ":" + minStr;
             
-            System.println("[FR265S] 时间文本: " + timeText);
+            // System.println("[FR265S] 时间文本: " + timeText);
             
             // 绘制时间文本 - FR265S专用：缩小字体，向下移动8像素
             var timeY = centerY - 94; // 从-102再向下移动8像素到-94
             dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
             dc.drawText(centerX, timeY, Graphics.FONT_XTINY, timeText, Graphics.TEXT_JUSTIFY_CENTER);
             
-            System.println("[FR265S] 时间绘制完成，位置: (" + centerX + ", " + timeY + ")，字体: FONT_XTINY");
+            // System.println("[FR265S] 时间绘制完成，位置: (" + centerX + ", " + timeY + ")，字体: FONT_XTINY");
             
             // 绘制日期信息
             var currentYear = today.year;
             var currentMonth = today.month;
             var currentDay = today.day;
             
-            System.println("[FR265S] 原始日期数据: 年=" + currentYear + ", 月=" + currentMonth + ", 日=" + currentDay);
+            // System.println("[FR265S] 原始日期数据: 年=" + currentYear + ", 月=" + currentMonth + ", 日=" + currentDay);
             
             // 转换月份
             var monthNum = convertMonthToNumber(currentMonth);
             var dayNum = (currentDay != null && currentDay instanceof Number) ? currentDay : 27;
             var yearNum = (currentYear != null && currentYear instanceof Number) ? currentYear : 2024;
             
-            System.println("[FR265S] 转换后日期数据: 年=" + yearNum + ", 月=" + monthNum + ", 日=" + dayNum);
+            // System.println("[FR265S] 转换后日期数据: 年=" + yearNum + ", 月=" + monthNum + ", 日=" + dayNum);
             
             var monthStr = monthNum < 10 ? "0" + monthNum.toString() : monthNum.toString();
             var dayStr = dayNum < 10 ? "0" + dayNum.toString() : dayNum.toString();
@@ -359,7 +359,7 @@ class FR265SRenderer {
                 weekdayIndex = 0;
             }
             
-            System.println("[FR265S] 星期计算: dayOfWeekNum=" + dayOfWeekNum + ", weekdayIndex=" + weekdayIndex);
+            // System.println("[FR265S] 星期计算: dayOfWeekNum=" + dayOfWeekNum + ", weekdayIndex=" + weekdayIndex);
             
             var dateString = monthStr + "月" + dayStr;
             var weekNames = ["日", "一", "二", "三", "四", "五", "六"];
@@ -371,7 +371,7 @@ class FR265SRenderer {
                 lunarDate = "农历未知";
             }
             
-            System.println("[FR265S] 显示文本: 日期=" + dateString + ", 农历=" + lunarDate + ", 星期=" + weekText);
+            // System.println("[FR265S] 显示文本: 日期=" + dateString + ", 农历=" + lunarDate + ", 星期=" + weekText);
             
             // 使用中文字体
             var fontToUse = (chineseFont != null) ? chineseFont : Graphics.FONT_TINY;
@@ -385,7 +385,7 @@ class FR265SRenderer {
             var startX = centerX - totalWidth / 2 + 3; // 向右移动3像素
             var dateWeekY = centerY - 55; // 从-65再向下移动10像素到-55
             
-            System.println("[FR265S] 布局计算: 总宽度=" + totalWidth + ", 起始X=" + startX + ", Y=" + dateWeekY);
+            // System.println("[FR265S] 布局计算: 总宽度=" + totalWidth + ", 起始X=" + startX + ", Y=" + dateWeekY);
             
             // 设置文本颜色为绿色
             dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
@@ -393,22 +393,22 @@ class FR265SRenderer {
             // 绘制日期
             var dateX = startX + dateWidth / 2;
             dc.drawText(dateX, dateWeekY, fontToUse, dateString, Graphics.TEXT_JUSTIFY_CENTER);
-            System.println("[FR265S] 日期绘制完成: " + dateString + " at (" + dateX + ", " + dateWeekY + ")");
+            // System.println("[FR265S] 日期绘制完成: " + dateString + " at (" + dateX + ", " + dateWeekY + ")");
             
             // 绘制农历
             var lunarX = startX + dateWidth + spacing + lunarWidth / 2;
             dc.drawText(lunarX, dateWeekY, fontToUse, lunarDate, Graphics.TEXT_JUSTIFY_CENTER);
-            System.println("[FR265S] 农历绘制完成: " + lunarDate + " at (" + lunarX + ", " + dateWeekY + ")");
+            // System.println("[FR265S] 农历绘制完成: " + lunarDate + " at (" + lunarX + ", " + dateWeekY + ")");
             
             // 绘制星期
             var weekX = startX + dateWidth + spacing + lunarWidth + spacing + weekWidth / 2;
             dc.drawText(weekX, dateWeekY, fontToUse, weekText, Graphics.TEXT_JUSTIFY_CENTER);
-            System.println("[FR265S] 星期绘制完成: " + weekText + " at (" + weekX + ", " + dateWeekY + ")");
+            // System.println("[FR265S] 星期绘制完成: " + weekText + " at (" + weekX + ", " + dateWeekY + ")");
             
-            System.println("[FR265S] 中心时间和日期信息绘制完成");
+            // System.println("[FR265S] 中心时间和日期信息绘制完成");
             
         } catch (ex) {
-            System.println("[FR265S] 中心时间和日期信息绘制异常: " + ex.getErrorMessage());
+            // System.println("[FR265S] 中心时间和日期信息绘制异常: " + ex.getErrorMessage());
         }
     }
     
@@ -419,7 +419,7 @@ class FR265SRenderer {
      * @param elementColors 配色方案
      */
     private function drawFR265SPointers(dc as Graphics.Dc, clockTime as Time.Moment, elementColors as Dictionary) as Void {
-        System.println("[FR265S] 开始绘制指针");
+        // System.println("[FR265S] 开始绘制指针");
         
         try {
             var clockTimeInfo = System.getClockTime();
@@ -439,14 +439,14 @@ class FR265SRenderer {
                 sec = clockTimeInfo.sec.toNumber();
             }
             
-            System.println("[FR265S] 时间值: " + hour + ":" + min + ":" + sec);
+            // System.println("[FR265S] 时间值: " + hour + ":" + min + ":" + sec);
             
             // 计算指针角度
             var hourAngle = ((hour % 12) * 30 + min * 0.5) * Math.PI / 180;
             var minuteAngle = min * 6 * Math.PI / 180;
             var secondAngle = sec * 6 * Math.PI / 180;
             
-            System.println("[FR265S] 指针角度计算完成");
+            // System.println("[FR265S] 指针角度计算完成");
             
             // 获取今日和明日的五行配色
             var todayColors = calculateDailyFiveElementColors(null);
@@ -460,8 +460,8 @@ class FR265SRenderer {
             var tomorrowMinuteColor = tomorrowColors[1];
             var tomorrowSecondColor = tomorrowColors[2];
             
-            System.println("[FR265S] 今日配色: 时针=" + hourColor + ", 分针=" + minuteColor + ", 秒针=" + secondColor);
-            System.println("[FR265S] 明日配色: 时针=" + tomorrowHourColor + ", 分针=" + tomorrowMinuteColor + ", 秒针=" + tomorrowSecondColor);
+            // System.println("[FR265S] 今日配色: 时针=" + hourColor + ", 分针=" + minuteColor + ", 秒针=" + secondColor);
+            // System.println("[FR265S] 明日配色: 时针=" + tomorrowHourColor + ", 分针=" + tomorrowMinuteColor + ", 秒针=" + tomorrowSecondColor);
             
             // 计算指针长度 - 使用FR965的比例
             var originalHourLength = radius * 0.6;
@@ -478,28 +478,28 @@ class FR265SRenderer {
             var minuteWidth = 19;
             var secondWidth = 11;
             
-            System.println("[FR265S] 指针尺寸: 时针长度=" + hourLength + ", 分针长度=" + minuteLength + ", 秒针长度=" + secondLength);
+            // System.println("[FR265S] 指针尺寸: 时针长度=" + hourLength + ", 分针长度=" + minuteLength + ", 秒针长度=" + secondLength);
             
             // 绘制时针
-            System.println("[FR265S] 开始绘制时针");
+            // System.println("[FR265S] 开始绘制时针");
             drawFR265SArrowHand(dc, hourAngle, hourLength, hourWidth, 12, hourColor, tomorrowHourColor, "hour");
             
             // 绘制分针
-            System.println("[FR265S] 开始绘制分针");
+            // System.println("[FR265S] 开始绘制分针");
             drawFR265SArrowHand(dc, minuteAngle, minuteLength, minuteWidth, 8, minuteColor, tomorrowMinuteColor, "minute");
             
             // 绘制秒针
-            System.println("[FR265S] 开始绘制秒针");
+            // System.println("[FR265S] 开始绘制秒针");
             drawFR265SArrowHand(dc, secondAngle, secondLength, secondWidth, 4, secondColor, tomorrowSecondColor, "second");
             
             // 绘制三层空心中心圆点
-            System.println("[FR265S] 开始绘制中心圆点");
+            // System.println("[FR265S] 开始绘制中心圆点");
             drawFR265SCenterCircles(dc, hourColor, minuteColor, secondColor);
             
-            System.println("[FR265S] 指针绘制完成");
+            // System.println("[FR265S] 指针绘制完成");
             
         } catch (ex) {
-            System.println("[FR265S] 指针绘制异常: " + ex.getErrorMessage());
+            // System.println("[FR265S] 指针绘制异常: " + ex.getErrorMessage());
         }
     }
     
@@ -511,7 +511,7 @@ class FR265SRenderer {
      * @param secondColor 秒针颜色
      */
     private function drawFR265SCenterCircles(dc as Graphics.Dc, hourColor as Number, minuteColor as Number, secondColor as Number) as Void {
-        System.println("[FR265S] 绘制三层中心圆点");
+        // System.println("[FR265S] 绘制三层中心圆点");
         
         // 外层圆（时针）
         dc.setColor(hourColor, Graphics.COLOR_TRANSPARENT);
@@ -528,7 +528,7 @@ class FR265SRenderer {
         dc.setPenWidth(1);
         dc.drawCircle(centerX, centerY, 2);
         
-        System.println("[FR265S] 中心圆点绘制完成");
+        // System.println("[FR265S] 中心圆点绘制完成");
     }
     
     /**
@@ -543,7 +543,7 @@ class FR265SRenderer {
      * @param type 指针类型
      */
     private function drawFR265SArrowHand(dc as Graphics.Dc, angle as Float, length as Number, width as Number, arrowSize as Number, bodyColor as Number, tipColor as Number, type as String) as Void {
-        System.println("[FR265S] 绘制" + type + "指针: 角度=" + angle + ", 长度=" + length + ", 宽度=" + width);
+        // System.println("[FR265S] 绘制" + type + "指针: 角度=" + angle + ", 长度=" + length + ", 宽度=" + width);
         
         var sin = Math.sin(angle);
         var cos = Math.cos(angle);
@@ -596,7 +596,7 @@ class FR265SRenderer {
         // 绘制明日配色小指针（菱形）
         drawFR265STomorrowMiniPointer(dc, angle, length, width, bodyColor, tipColor, sin, cos, perpSin, perpCos);
         
-        System.println("[FR265S] " + type + "指针绘制完成");
+        // System.println("[FR265S] " + type + "指针绘制完成");
     }
     
     /**
@@ -697,28 +697,28 @@ class FR265SRenderer {
     }
     
     private function getWeatherData() as Dictionary {
-        System.println("[FR265S] 开始获取天气数据");
+        // // System.println("[FR265S] 开始获取天气数据");
         
         try {
             var conditions = Weather.getCurrentConditions();
             if (conditions != null) {
-                System.println("[FR265S] 获取到天气条件对象");
+                // // System.println("[FR265S] 获取到天气条件对象");
                 
                 var temperature = 25; // 默认温度
                 var condition = Weather.CONDITION_CLEAR; // 默认晴天
                 
                 if (conditions.temperature != null) {
                     temperature = conditions.temperature.toNumber();
-                    System.println("[FR265S] 获取到温度: " + temperature);
+                    // // System.println("[FR265S] 获取到温度: " + temperature);
                 } else {
-                    System.println("[FR265S] 温度为null，使用默认值");
+                    // // System.println("[FR265S] 温度为null，使用默认值");
                 }
                 
                 if (conditions.condition != null) {
                     condition = conditions.condition;
-                    System.println("[FR265S] 获取到天气条件: " + condition);
+                    // // System.println("[FR265S] 获取到天气条件: " + condition);
                 } else {
-                    System.println("[FR265S] 天气条件为null，使用默认值");
+                    // // System.println("[FR265S] 天气条件为null，使用默认值");
                 }
                 
                 return {
@@ -726,14 +726,14 @@ class FR265SRenderer {
                     :condition => condition
                 };
             } else {
-                System.println("[FR265S] 天气条件对象为null");
+                // // System.println("[FR265S] 天气条件对象为null");
             }
         } catch (ex) {
-            System.println("[FR265S] 获取天气数据异常: " + ex.getErrorMessage());
+            // // System.println("[FR265S] 获取天气数据异常: " + ex.getErrorMessage());
         }
         
         // 返回默认天气数据，确保condition不为null
-        System.println("[FR265S] 返回默认天气数据");
+        // System.println("[FR265S] 返回默认天气数据");
         return {
             :temperature => 25,
             :condition => Weather.CONDITION_CLEAR
@@ -990,26 +990,26 @@ class FR265SRenderer {
      * @return 月份数字(1-12)
      */
     private function convertMonthToNumber(monthEnum) as Number {
-        System.println("[FR265S] convertMonthToNumber输入: " + monthEnum);
+        // System.println("[FR265S] convertMonthToNumber输入: " + monthEnum);
         
         // 优先处理数字类型（真机环境常见）
         if (monthEnum instanceof Number) {
             var numValue = monthEnum.toNumber();
-            System.println("[FR265S] 数字类型月份: " + numValue);
+            // System.println("[FR265S] 数字类型月份: " + numValue);
             
             // 检测月份范围并进行相应转换
             if (numValue >= 1 && numValue <= 12) {
                 // 标准1-12范围，直接返回
-                System.println("[FR265S] 标准范围月份: " + numValue);
+                // System.println("[FR265S] 标准范围月份: " + numValue);
                 return numValue;
             } else if (numValue >= 0 && numValue <= 11) {
                 // 0-11范围（真机常见），转换为1-12
                 var convertedValue = numValue + 1;
-                System.println("[FR265S] 0-11范围转换: " + numValue + " -> " + convertedValue);
+                // System.println("[FR265S] 0-11范围转换: " + numValue + " -> " + convertedValue);
                 return convertedValue;
             } else {
                 // 超出范围，使用默认值
-                System.println("[FR265S] 超出范围，使用默认值7");
+                // System.println("[FR265S] 超出范围，使用默认值7");
                 return 7;
             }
         }
@@ -1017,7 +1017,7 @@ class FR265SRenderer {
         // 处理字符串类型
         if (monthEnum instanceof String) {
             var monthStr = monthEnum.toString();
-            System.println("[FR265S] 字符串类型月份: " + monthStr);
+            // System.println("[FR265S] 字符串类型月份: " + monthStr);
             
             if (monthStr.equals("Jan") || monthStr.equals("January")) { return 1; }
             if (monthStr.equals("Feb") || monthStr.equals("February")) { return 2; }
@@ -1036,7 +1036,7 @@ class FR265SRenderer {
             try {
                 var numFromStr = monthStr.toNumber();
                 if (numFromStr != null && numFromStr >= 1 && numFromStr <= 12) {
-                    System.println("[FR265S] 字符串转数字: " + numFromStr);
+                    // System.println("[FR265S] 字符串转数字: " + numFromStr);
                     return numFromStr;
                 }
             } catch (ex) {
@@ -1045,7 +1045,7 @@ class FR265SRenderer {
         }
         
         // 默认返回7月
-        System.println("[FR265S] 无法识别月份类型，返回默认值7");
+        // System.println("[FR265S] 无法识别月份类型，返回默认值7");
         return 7;
     }
     
@@ -1057,7 +1057,7 @@ class FR265SRenderer {
      * @return 星期几(1=星期日, 2=星期一, ..., 7=星期六)
      */
     private function calculateDayOfWeek(year as Number, month as Number, day as Number) as Number {
-        System.println("[FR265S] calculateDayOfWeek输入: " + year + "-" + month + "-" + day);
+        // System.println("[FR265S] calculateDayOfWeek输入: " + year + "-" + month + "-" + day);
         
         // 使用基于已知基准日期的相对计算方法（与FR965相同）
         // 基准：2025年7月31日是星期四（dayOfWeek = 5）
@@ -1080,9 +1080,9 @@ class FR265SRenderer {
             dayOfWeek += 7;
         }
         
-        System.println("[FR265S] 调试信息: targetDays=" + targetDays + ", baseDays=" + baseDays + ", daysDiff=" + daysDiff + ", baseDayOfWeek=" + baseDayOfWeek + ", 计算结果=" + dayOfWeek);
+        // System.println("[FR265S] 星期计算调试: targetDays=" + targetDays + ", baseDays=" + baseDays + ", daysDiff=" + daysDiff + ", baseDayOfWeek=" + baseDayOfWeek + ", dayOfWeek=" + dayOfWeek);
         
-        System.println("[FR265S] 星期计算结果: " + dayOfWeek);
+        // System.println("[FR265S] 星期计算结果: " + dayOfWeek);
         return dayOfWeek;
     }
     
@@ -1180,7 +1180,7 @@ class FR265SRenderer {
         
         var finalResult = monthStr + lunarDays[lunarDay - 1];
         
-        System.println("[FR265S] 农历计算结果: " + finalResult);
+        // System.println("[FR265S] 农历计算结果: " + finalResult);
         return finalResult;
     }
     
@@ -1456,7 +1456,7 @@ class FR265SRenderer {
      */
     private function calculateDailyFiveElementColors(today) as Array {
         try {
-            System.println("[FR265S] 开始计算五行配色");
+            // System.println("[FR265S] 开始计算五行配色");
             
             // 如果没有传入日期参数，则使用当前日期
             if (today == null) {
@@ -1522,11 +1522,11 @@ class FR265SRenderer {
                 elementColorMap[normalLucky]   // 秒针颜色（平平）
             ];
             
-            System.println("[FR265S] 五行配色计算完成: [" + colors[0] + ", " + colors[1] + ", " + colors[2] + "]");
+            // System.println("[FR265S] 五行配色计算完成: [" + colors[0] + ", " + colors[1] + ", " + colors[2] + "]");
             
             return colors;
         } catch (ex) {
-            System.println("[FR265S] 五行配色计算异常: " + ex.getErrorMessage());
+            // System.println("[FR265S] 五行配色计算异常: " + ex.getErrorMessage());
             // 默认返回黄红黑配色
             return [0xFFFF00, 0xFF0000, 0x000000];
         }
@@ -1538,7 +1538,7 @@ class FR265SRenderer {
      */
     private function calculateTomorrowFiveElementColors() as Array {
         try {
-            System.println("[FR265S] 开始计算明日五行配色");
+            // System.println("[FR265S] 开始计算明日五行配色");
             
             // 获取明日的日期
             var tomorrow = new Time.Moment(Time.now().value() + 24 * 60 * 60);
@@ -1547,7 +1547,7 @@ class FR265SRenderer {
             // 计算明日的五行配色
             return calculateDailyFiveElementColors(tomorrowInfo);
         } catch (ex) {
-            System.println("[FR265S] 明日五行配色计算异常: " + ex.getErrorMessage());
+            // System.println("[FR265S] 明日五行配色计算异常: " + ex.getErrorMessage());
             // 如果出错，返回默认配色
             return calculateDailyFiveElementColors(null);
         }
