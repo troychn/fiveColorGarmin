@@ -26,10 +26,12 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
     // 使用系统字体显示图标字符
     // private var _iconFont as WatchUi.FontResource or Null = null;
     
-    // FR255专用组件
+    // 设备适配组件
     private var _deviceAdapter as DeviceAdapter or Null = null;
     private var _fr255Renderer as FR255Renderer or Null = null;
+    private var _fr265sRenderer as FR265SRenderer or Null = null;
     private var _isFR255Device as Boolean = false;
+    private var _isFR265SDevice as Boolean = false;
 
     // 五行颜色定义
     private var _fiveElementColors as Array<Number> = [
@@ -39,6 +41,34 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
         0xFFFFFF, // 金 - 白色
         0x0080FF  // 水 - 蓝色
     ];
+    
+    /**
+     * 检测是否为真正的FR265S设备
+     * @param screenWidth 屏幕宽度
+     * @param screenHeight 屏幕高度
+     * @return 是否为FR265S设备
+     */
+    private function isRealFR265SDevice(screenWidth as Number, screenHeight as Number) as Boolean {
+        // FR265S的正确分辨率是360x360
+        if (screenWidth == 360 && screenHeight == 360) {
+            return true;
+        }
+        
+        // 如果分辨率不匹配，进一步通过产品ID确认
+        try {
+            var deviceSettings = System.getDeviceSettings();
+            var partNumber = deviceSettings.partNumber;
+            if (partNumber != null) {
+                var partStr = partNumber.toString().toLower();
+                return (partStr.find("265s") != null);
+            }
+        } catch (ex) {
+            // 如果获取设备信息失败，基于分辨率判断
+        }
+        
+        // 只有360x360分辨率的设备才被识别为FR265S
+        return false;
+    }
     
     /**
      * 获取当前五行配色方案
@@ -348,8 +378,9 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             _centerY = (_screenHeight / 2).toNumber();
             _radius = (_screenWidth < _screenHeight ? _screenWidth : _screenHeight) / 2 - 10;
             
-            // 设备检测和FR255专用组件初始化
+            // 设备检测和专用组件初始化
             _isFR255Device = (_screenWidth == 260 && _screenHeight == 260);
+            _isFR265SDevice = isRealFR265SDevice(_screenWidth, _screenHeight);
             
             if (_isFR255Device) {
                 // 初始化FR255专用组件
@@ -358,6 +389,13 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
                 
                 _fr255Renderer = new FR255Renderer();
                 _fr255Renderer.setup(_deviceAdapter, _centerX, _centerY, _radius, _screenWidth, _screenHeight);
+            } else if (_isFR265SDevice) {
+                // 初始化FR265S专用组件
+                _deviceAdapter = new DeviceAdapter();
+                _deviceAdapter.setup(_screenWidth, _screenHeight);
+                
+                _fr265sRenderer = new FR265SRenderer();
+                _fr265sRenderer.setup(_deviceAdapter, _centerX, _centerY, _radius, _screenWidth, _screenHeight);
             }
             
         } catch (ex) {
@@ -385,6 +423,7 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
                 
                 // 重新检测设备类型
                 _isFR255Device = (_screenWidth == 260 && _screenHeight == 260);
+                _isFR265SDevice = isRealFR265SDevice(_screenWidth, _screenHeight);
                 
                 if (_isFR255Device && (_deviceAdapter == null || _fr255Renderer == null)) {
                     // 延迟初始化FR255组件
@@ -393,6 +432,13 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
                     
                     _fr255Renderer = new FR255Renderer();
                     _fr255Renderer.setup(_deviceAdapter, _centerX, _centerY, _radius, _screenWidth, _screenHeight);
+                } else if (_isFR265SDevice && (_deviceAdapter == null || _fr265sRenderer == null)) {
+                    // 延迟初始化FR265S组件
+                    _deviceAdapter = new DeviceAdapter();
+                    _deviceAdapter.setup(_screenWidth, _screenHeight);
+                    
+                    _fr265sRenderer = new FR265SRenderer();
+                    _fr265sRenderer.setup(_deviceAdapter, _centerX, _centerY, _radius, _screenWidth, _screenHeight);
                 }
             }
             
@@ -406,6 +452,9 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             if (_isFR255Device && _fr255Renderer != null) {
                 // FR255专用渲染路径
                 renderFR255WatchFace(dc, elementColors);
+            } else if (_isFR265SDevice && _fr265sRenderer != null) {
+                // FR265S专用渲染路径
+                renderFR265SWatchFace(dc, elementColors);
             } else {
                 // FR965原始渲染路径（保持不变）
                 renderFR965WatchFace(dc, elementColors);
@@ -432,6 +481,16 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
     private function renderFR255WatchFace(dc as Graphics.Dc, elementColors as Dictionary) as Void {
         // 使用FR255专用渲染器
         _fr255Renderer.renderWatchFace(dc, elementColors);
+    }
+
+    /**
+     * FR265S专用渲染方法
+     * @param dc 绘图上下文
+     * @param elementColors 五行配色方案
+     */
+    private function renderFR265SWatchFace(dc as Graphics.Dc, elementColors as Dictionary) as Void {
+        // 使用FR265S专用渲染器
+        _fr265sRenderer.renderWatchFace(dc, elementColors);
     }
 
     /**

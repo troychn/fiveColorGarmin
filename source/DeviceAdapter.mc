@@ -35,6 +35,19 @@ class DeviceAdapter {
                 "minute" => 0.65,
                 "second" => 0.8
             }
+        },
+        "fr265s" => {
+            "screenWidth" => 360,
+            "screenHeight" => 360,
+            "isAMOLED" => true,
+            "isSmallScreen" => false,
+            "scaleRatio" => 0.79,
+            "fontScale" => 0.85,
+            "handLengthRatio" => {
+                "hour" => 0.45,
+                "minute" => 0.65,
+                "second" => 0.8
+            }
         }
     };
     
@@ -70,10 +83,35 @@ class DeviceAdapter {
      * @return 设备ID字符串
      */
     private function getCurrentDeviceId() as String {
-        // 基于屏幕尺寸判断设备类型
+        // 首先尝试通过系统获取真实的产品ID
+        try {
+            var deviceSettings = System.getDeviceSettings();
+            var partNumber = deviceSettings.partNumber;
+            if (partNumber != null) {
+                var partStr = partNumber.toString().toLower();
+                if (partStr.find("265s") != null) {
+                    return "fr265s";
+                } else if (partStr.find("265") != null) {
+                    return "fr965"; // FR265使用FR965渲染路径
+                } else if (partStr.find("255") != null) {
+                    return "fr255";
+                } else if (partStr.find("965") != null) {
+                    return "fr965";
+                }
+            }
+        } catch (ex) {
+            // 如果获取设备信息失败，回退到屏幕尺寸判断
+        }
+        
+        // 回退方案：基于屏幕尺寸判断设备类型
         if (screenWidth == 260 && screenHeight == 260) {
             return "fr255";
         } else if (screenWidth == 454 && screenHeight == 454) {
+            return "fr965";
+        } else if (screenWidth == 360 && screenHeight == 360) {
+            return "fr265s";
+        } else if (screenWidth == 416 && screenHeight == 416) {
+            // 416x416的设备（FR265等）使用FR965渲染路径
             return "fr965";
         } else {
             // 默认返回FR965
@@ -194,6 +232,20 @@ class DeviceAdapter {
                 default:
                     return Graphics.FONT_SMALL;
             }
+        } else if (currentDeviceId.equals("fr265s")) {
+            // FR265S专用字体适配 - 略小于FR965但大于FR255
+            switch (baseFont) {
+                case Graphics.FONT_LARGE:
+                    return Graphics.FONT_LARGE;
+                case Graphics.FONT_MEDIUM:
+                    return Graphics.FONT_MEDIUM;
+                case Graphics.FONT_SMALL:
+                    return Graphics.FONT_SMALL;
+                case Graphics.FONT_TINY:
+                    return Graphics.FONT_TINY;
+                default:
+                    return Graphics.FONT_MEDIUM;
+            }
         } else {
             // FR965使用原始字体
             return baseFont;
@@ -209,6 +261,9 @@ class DeviceAdapter {
         if (currentDeviceId.equals("fr255")) {
             // FR255使用更细的线条
             return (baseWidth * 0.7).toNumber();
+        } else if (currentDeviceId.equals("fr265s")) {
+            // FR265S使用略细的线条
+            return (baseWidth * 0.9).toNumber();
         } else {
             return baseWidth;
         }
@@ -259,9 +314,11 @@ class DeviceAdapter {
      */
     public function getTimePositionOffset() as Number {
         if (currentDeviceId.equals("fr255")) {
-            return -75; // FR255专用时间位置
+            return -120; // FR255专用时间位置
+        } else if (currentDeviceId.equals("fr265s")) {
+            return -100; // FR265S专用时间位置（360x360屏幕）
         } else {
-            return -130; // FR965原始位置
+            return -140; // FR965原始位置
         }
     }
     
@@ -272,6 +329,8 @@ class DeviceAdapter {
     public function getDatePositionOffset() as Number {
         if (currentDeviceId.equals("fr255")) {
             return -50; // FR255专用日期位置
+        } else if (currentDeviceId.equals("fr265s")) {
+            return -70; // FR265S专用日期位置（360x360屏幕）
         } else {
             return -100; // FR965原始位置
         }
