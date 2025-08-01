@@ -36,6 +36,19 @@ class DeviceAdapter {
                 "second" => 0.8
             }
         },
+        "fr255m" => {
+            "screenWidth" => 260,
+            "screenHeight" => 260,
+            "isAMOLED" => false,
+            "isSmallScreen" => true,
+            "scaleRatio" => 1.0,
+            "fontScale" => 0.8,
+            "handLengthRatio" => {
+                "hour" => 0.45,
+                "minute" => 0.65,
+                "second" => 0.8
+            }
+        },
         "fr265s" => {
             "screenWidth" => 360,
             "screenHeight" => 360,
@@ -93,6 +106,8 @@ class DeviceAdapter {
                     return "fr265s";
                 } else if (partStr.find("265") != null) {
                     return "fr965"; // FR265使用FR965渲染路径
+                } else if (partStr.find("255music") != null || partStr.find("255m") != null) {
+                    return "fr255m";
                 } else if (partStr.find("255") != null) {
                     return "fr255";
                 } else if (partStr.find("965") != null) {

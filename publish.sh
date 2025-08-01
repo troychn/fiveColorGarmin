@@ -30,7 +30,7 @@ PROJECT_INFO="$SDK_PATH/bin/projectInfo.xml"
 export PATH="$SDK_PATH/bin:$PATH"
 
 # 支持的设备列表
-DEVICES=("fr965" "fr255" "fr265" "fr265s" "fr57042mm" "fr57047mm" "fr970")
+DEVICES=("fr965" "fr255" "fr255m" "fr265" "fr265s" "fr57042mm" "fr57047mm" "fr970")
 
 # 函数：打印带颜色的消息
 print_info() {
@@ -241,7 +241,7 @@ build_all_debug() {
     print_info "编译所有设备调试版本..."
     
     local success_count=0
-    local total_count=7
+    local total_count=8
     
     # 编译FR965调试版本
     if build_fr965_debug; then
@@ -250,6 +250,11 @@ build_all_debug() {
     
     # 编译FR255调试版本
     if build_fr255_debug; then
+        ((success_count++))
+    fi
+    
+    # 编译FR255 Music调试版本
+    if build_fr255m_debug; then
         ((success_count++))
     fi
     
@@ -339,6 +344,56 @@ deploy_fr255_debug_to_simulator() {
     fi
 }
 
+# 函数：编译FR255 Music调试版本
+build_fr255m_debug() {
+    print_info "开始编译FR255 Music调试版本..."
+    
+    local fr255m_debug_output="${BIN_DIR}/${PROJECT_NAME}_fr255m_debug.prg"
+    
+    if monkeyc -f "$JUNGLE_FILE" -o "$fr255m_debug_output" -y "$DEVELOPER_KEY" -d fr255m -w; then
+        print_success "FR255 Music调试版本编译完成: $fr255m_debug_output"
+        
+        # 显示文件大小
+        local file_size=$(ls -lh "$fr255m_debug_output" | awk '{print $5}')
+        print_info "文件大小: $file_size"
+        
+        return 0
+    else
+        print_error "FR255 Music调试版本编译失败"
+        return 1
+    fi
+}
+
+# 函数：部署FR255 Music调试版本到模拟器
+deploy_fr255m_debug_to_simulator() {
+    print_info "部署FR255 Music调试版本到模拟器..."
+    
+    local fr255m_debug_prg="${BIN_DIR}/${PROJECT_NAME}_fr255m_debug.prg"
+    
+    if [[ ! -f "$fr255m_debug_prg" ]]; then
+        print_warning "FR255 Music调试版本PRG文件不存在，正在编译..."
+        if ! build_fr255m_debug; then
+            print_error "无法编译FR255 Music调试版本"
+            exit 1
+        fi
+    fi
+    
+    # 检查模拟器是否运行
+    if ! pgrep -f "simulator" > /dev/null && ! pgrep -f "connectiq" > /dev/null; then
+        print_info "启动模拟器..."
+        connectiq &
+        sleep 5
+    fi
+    
+    # 部署到模拟器
+    if monkeydo "$fr255m_debug_prg" fr255m; then
+        print_success "FR255 Music调试版本已部署到模拟器"
+    else
+        print_error "FR255 Music调试版本部署到模拟器失败"
+        exit 1
+    fi
+}
+
 # 函数：编译FR965发布版本
 build_fr965_release() {
     print_info "编译FR965发布版本..."
@@ -373,6 +428,26 @@ build_fr255_release() {
         return 0
     else
         print_error "FR255发布版本编译失败"
+        return 1
+    fi
+}
+
+# 函数：编译FR255 Music发布版本
+build_fr255m_release() {
+    print_info "开始编译FR255 Music发布版本..."
+    
+    local release_output="${BIN_DIR}/${PROJECT_NAME}_fr255m_release.prg"
+    
+    if monkeyc -f "$JUNGLE_FILE" -o "$release_output" -y "$DEVELOPER_KEY" -d fr255 -r; then
+        print_success "FR255 Music发布版本编译完成: $release_output"
+        
+        # 显示文件大小
+        local file_size=$(ls -lh "$release_output" | awk '{print $5}')
+        print_info "文件大小: $file_size"
+        
+        return 0
+    else
+        print_error "FR255 Music发布版本编译失败"
         return 1
     fi
 }
@@ -501,7 +576,7 @@ build_all_release() {
     print_info "编译所有设备发布版本..."
     
     local success_count=0
-    local total_count=8
+    local total_count=9
     
     # 编译FR965发布版本
     if build_fr965_release; then
@@ -510,6 +585,11 @@ build_all_release() {
     
     # 编译FR255发布版本
     if build_fr255_release; then
+        ((success_count++))
+    fi
+    
+    # 编译FR255 Music发布版本
+    if build_fr255m_release; then
         ((success_count++))
     fi
     
@@ -640,6 +720,36 @@ deploy_fr255_release_to_simulator() {
         print_success "FR255发布版本已部署到模拟器"
     else
         print_error "FR255发布版本部署到模拟器失败"
+        exit 1
+    fi
+}
+
+# 函数：部署FR255 Music发布版本到模拟器
+deploy_fr255m_release_to_simulator() {
+    print_info "部署FR255 Music发布版本到模拟器..."
+    
+    local fr255m_release_prg="${BIN_DIR}/${PROJECT_NAME}_fr255m_release.prg"
+    
+    if [[ ! -f "$fr255m_release_prg" ]]; then
+        print_warning "FR255 Music发布版本PRG文件不存在，正在编译..."
+        if ! build_fr255m_release; then
+            print_error "无法编译FR255 Music发布版本"
+            exit 1
+        fi
+    fi
+    
+    # 检查模拟器是否运行
+    if ! pgrep -f "simulator" > /dev/null && ! pgrep -f "connectiq" > /dev/null; then
+        print_info "启动模拟器..."
+        connectiq &
+        sleep 5
+    fi
+    
+    # 部署到模拟器
+    if monkeydo "$fr255m_release_prg" fr255; then
+        print_success "FR255 Music发布版本已部署到模拟器"
+    else
+        print_error "FR255 Music发布版本部署到模拟器失败"
         exit 1
     fi
 }
@@ -1073,6 +1183,8 @@ show_help() {
     echo "  --fr965-debug-sim    编译FR965调试版本并部署到模拟器"
     echo "  --fr255-debug        编译FR255调试版本"
     echo "  --fr255-debug-sim    编译FR255调试版本并部署到模拟器"
+    echo "  --fr255m-debug       编译FR255 Music调试版本"
+  echo "  --fr255m-debug-sim   编译FR255 Music调试版本并部署到模拟器"
     echo "  --fr265-debug        编译FR265调试版本"
     echo "  --fr265-debug-sim    编译FR265调试版本并部署到模拟器"
     echo "  --fr265s-debug       编译FR265S调试版本"
@@ -1088,6 +1200,8 @@ show_help() {
     echo "  --fr965-release-sim  编译FR965发布版本并部署到模拟器"
     echo "  --fr255-release      编译FR255发布版本"
     echo "  --fr255-release-sim  编译FR255发布版本并部署到模拟器"
+    echo "  --fr255m-release     编译FR255 Music发布版本"
+  echo "  --fr255m-release-sim 编译FR255 Music发布版本并部署到模拟器"
     echo "  --fr265-release      编译FR265发布版本"
     echo "  --fr265-release-sim  编译FR265发布版本并部署到模拟器"
     echo "  --fr265s-release     编译FR265S发布版本"
@@ -1111,6 +1225,7 @@ show_help() {
     echo "  $0 --fr965-debug-sim    # 编译FR965调试版本并部署到模拟器"
     echo "  $0 --fr255-debug        # 仅编译FR255调试版本"
     echo "  $0 --fr255-debug-sim    # 编译FR255调试版本并部署到模拟器"
+    echo "  $0 --fr255m-debug-sim    # 编译FR255 Music调试版本并部署到模拟器"
     echo "  $0 --release            # 编译所有发布版本"
     echo "  $0 --fr965-release      # 仅编译FR965发布版本"
     echo "  $0 --fr965-release-sim  # 编译FR965发布版本并部署到模拟器"
@@ -1171,6 +1286,21 @@ main() {
             clean_build
             build_fr255_debug
             deploy_fr255_debug_to_simulator
+            exit 0
+            ;;
+        --fr255m-debug)
+            check_tools
+            validate_project
+            clean_build
+            build_fr255m_debug
+            exit 0
+            ;;
+        --fr255m-debug-sim)
+            check_tools
+            validate_project
+            clean_build
+            build_fr255m_debug
+            deploy_fr255m_debug_to_simulator
             exit 0
             ;;
         --fr265-debug)
@@ -1284,6 +1414,21 @@ main() {
             clean_build
             build_fr255_release
             deploy_fr255_release_to_simulator
+            exit 0
+            ;;
+        --fr255m-release)
+            check_tools
+            validate_project
+            clean_build
+            build_fr255m_release
+            exit 0
+            ;;
+        --fr255m-release-sim)
+            check_tools
+            validate_project
+            clean_build
+            build_fr255m_release
+            deploy_fr255m_release_to_simulator
             exit 0
             ;;
         --fr265-release)
