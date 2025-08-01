@@ -63,8 +63,9 @@ class FR255Renderer {
      * FR255专用表盘渲染方法 - 完整版本
      * @param dc 绘图上下文
      * @param elementColors 五行配色方案
+     * @param settings 用户设置参数
      */
-    public function renderWatchFace(dc as Graphics.Dc, elementColors as Dictionary) as Void {
+    public function renderWatchFace(dc as Graphics.Dc, elementColors as Dictionary, settings as Dictionary or Null) as Void {
         if (deviceAdapter == null) {
             return;
         }
@@ -78,8 +79,8 @@ class FR255Renderer {
         // FR255专用渲染流程 - 按照FR965的完整布局
         drawFR255HourMarks(dc, elementColors, scale);
         drawFR255MinuteMarks(dc, elementColors, scale);
-        drawFR255CenterTimeInfo(dc, elementColors, scale);
-        drawFR255HealthData(dc, elementColors, scale);
+        drawFR255CenterTimeInfo(dc, elementColors, scale, settings);
+        drawFR255HealthData(dc, elementColors, scale, settings);
         drawFR255WatchHands(dc, elementColors, scale);
     }
     
@@ -626,8 +627,12 @@ class FR255Renderer {
     
     /**
      * FR255专用中心时间信息绘制 - 参考FR965完整布局
+     * @param dc 绘图上下文
+     * @param elementColors 五行配色方案
+     * @param scale 缩放比例
+     * @param settings 用户设置参数
      */
-    private function drawFR255CenterTimeInfo(dc as Graphics.Dc, elementColors as Dictionary, scale as Float) as Void {
+    private function drawFR255CenterTimeInfo(dc as Graphics.Dc, elementColors as Dictionary, scale as Float, settings as Dictionary or Null) as Void {
         try {
             var clockTime = System.getClockTime();
             var now = Time.now();
@@ -714,24 +719,31 @@ class FR255Renderer {
             
             var startX = centerX - totalWidth / 2;
             
-            // 绘制日期和星期
-            dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+            // 绘制日期和星期 - 根据设置显示
+            var showDateInfo = true;
+            if (settings != null && settings.hasKey("showDateInfo")) {
+                showDateInfo = settings["showDateInfo"];
+            }
             
-            if (useChineseFont) {
-                // 使用中文字体时需要应用缩放
-                var dateX = startX + dateWidth / 2;
-                var weekX = startX + dateWidth + spacing + weekWidth / 2;
+            if (showDateInfo) {
+                dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
                 
-                // 通过调整字体高度模拟缩放效果
-                var adjustedDateY = dateY + 2; // 稍微向下调整位置
-                dc.drawText(dateX, adjustedDateY, fontToUse, dateString, Graphics.TEXT_JUSTIFY_CENTER);
-                dc.drawText(weekX, adjustedDateY, fontToUse, weekText, Graphics.TEXT_JUSTIFY_CENTER);
-            } else {
-                // 使用小字体时正常绘制
-                var dateX = startX + dateWidth / 2;
-                var weekX = startX + dateWidth + spacing + weekWidth / 2;
-                dc.drawText(dateX, dateY, fontToUse, dateString, Graphics.TEXT_JUSTIFY_CENTER);
-                dc.drawText(weekX, dateY, fontToUse, weekText, Graphics.TEXT_JUSTIFY_CENTER);
+                if (useChineseFont) {
+                    // 使用中文字体时需要应用缩放
+                    var dateX = startX + dateWidth / 2;
+                    var weekX = startX + dateWidth + spacing + weekWidth / 2;
+                    
+                    // 通过调整字体高度模拟缩放效果
+                    var adjustedDateY = dateY + 2; // 稍微向下调整位置
+                    dc.drawText(dateX, adjustedDateY, fontToUse, dateString, Graphics.TEXT_JUSTIFY_CENTER);
+                    dc.drawText(weekX, adjustedDateY, fontToUse, weekText, Graphics.TEXT_JUSTIFY_CENTER);
+                } else {
+                    // 使用小字体时正常绘制
+                    var dateX = startX + dateWidth / 2;
+                    var weekX = startX + dateWidth + spacing + weekWidth / 2;
+                    dc.drawText(dateX, dateY, fontToUse, dateString, Graphics.TEXT_JUSTIFY_CENTER);
+                    dc.drawText(weekX, dateY, fontToUse, weekText, Graphics.TEXT_JUSTIFY_CENTER);
+                }
             }
             
         } catch (ex) {
@@ -741,8 +753,12 @@ class FR255Renderer {
     
     /**
      * FR255专用健康数据绘制 - 参考FR965布局
+     * @param dc 绘图上下文
+     * @param elementColors 五行配色方案
+     * @param scale 缩放比例
+     * @param settings 用户设置参数
      */
-    private function drawFR255HealthData(dc as Graphics.Dc, elementColors as Dictionary, scale as Float) as Void {
+    private function drawFR255HealthData(dc as Graphics.Dc, elementColors as Dictionary, scale as Float, settings as Dictionary or Null) as Void {
         try {
             // 获取健康数据
             var activityInfo = ActivityMonitor.getInfo();
@@ -771,83 +787,118 @@ class FR255Renderer {
             var batteryX = centerX;
             var batteryY = centerY + 75 + verticalOffset - 15 - 6; // 电量上移15像素，再向上移动6像素
             
-            // 1. 绘制心率数据 (左上方)
-            var heartRateValue = "--";
-            if (heartRate != null) {
-                heartRateValue = heartRate.toString();
+            // 1. 绘制心率数据 (左上方) - 根据设置显示
+            var showHeartRate = true;
+            if (settings != null && settings.hasKey("showHeartRate")) {
+                showHeartRate = settings["showHeartRate"];
             }
             
-            // 绘制心率图标
-            dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
-            drawHeartIcon(dc, heartRateX, heartRateY - 6, iconSize);
-            
-            // 绘制心率数值
-            dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(heartRateX, heartRateY + 5, Graphics.FONT_SYSTEM_XTINY, heartRateValue, Graphics.TEXT_JUSTIFY_CENTER);
-            
-            // 2. 绘制步数数据 (右上方)
-            var stepsValue = "--";
-            if (activityInfo != null && activityInfo.steps != null) {
-                stepsValue = activityInfo.steps.toString();
+            if (showHeartRate) {
+                var heartRateValue = "--";
+                if (heartRate != null) {
+                    heartRateValue = heartRate.toString();
+                }
+                
+                // 绘制心率图标
+                dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+                drawHeartIcon(dc, heartRateX, heartRateY - 6, iconSize);
+                
+                // 绘制心率数值
+                dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(heartRateX, heartRateY + 5, Graphics.FONT_SYSTEM_XTINY, heartRateValue, Graphics.TEXT_JUSTIFY_CENTER);
             }
             
-            // 绘制步数图标
-            dc.setColor(0xFF9900, Graphics.COLOR_TRANSPARENT);
-            drawFootprintIcon(dc, stepsX, stepsY - 6, iconSize);
-            
-            // 绘制步数数值
-            dc.setColor(0xFF9900, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(stepsX, stepsY + 5, Graphics.FONT_SYSTEM_XTINY, stepsValue, Graphics.TEXT_JUSTIFY_CENTER);
-            
-            // 3. 绘制卡路里数据 (左下方)
-            var caloriesValue = "--";
-            if (activityInfo != null && activityInfo.calories != null) {
-                caloriesValue = activityInfo.calories.toString();
+            // 2. 绘制步数数据 (右上方) - 根据设置显示
+            var showSteps = true;
+            if (settings != null && settings.hasKey("showSteps")) {
+                showSteps = settings["showSteps"];
             }
             
-            // 绘制卡路里图标
-            dc.setColor(0xFF6600, Graphics.COLOR_TRANSPARENT);
-            drawFireIcon(dc, caloriesX, caloriesY - 6, iconSize);
-            
-            // 绘制卡路里数值
-            dc.setColor(0xFF6600, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(caloriesX, caloriesY + 5, Graphics.FONT_SYSTEM_XTINY, caloriesValue, Graphics.TEXT_JUSTIFY_CENTER);
-            
-            // 4. 绘制天气数据 (右下方)
-            var weatherData = getWeatherData();
-            var temperature = weatherData[:temperature];
-            var weatherValue;
-            if (temperature instanceof Float || temperature instanceof Double) {
-                weatherValue = Math.round(temperature).toNumber().toString() + "°";
-            } else {
-                weatherValue = temperature.toString() + "°";
-            }
-            var weatherCondition = weatherData[:condition];
-            
-            // 绘制天气图标
-            drawWeatherIcon(dc, weatherX, weatherY - 6, iconSize, weatherCondition);
-            
-            // 绘制天气数值
-            dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(weatherX, weatherY + 5, Graphics.FONT_SYSTEM_XTINY, weatherValue, Graphics.TEXT_JUSTIFY_CENTER);
-            
-            // 5. 绘制电量数据 (底部中间)
-            var batteryValue = "--";
-            if (systemStats != null && systemStats.battery != null) {
-                var battery = systemStats.battery.toNumber();
-                batteryValue = battery.toString() + "%";
+            if (showSteps) {
+                var stepsValue = "--";
+                if (activityInfo != null && activityInfo.steps != null) {
+                    stepsValue = activityInfo.steps.toString();
+                }
+                
+                // 绘制步数图标
+                dc.setColor(0xFF9900, Graphics.COLOR_TRANSPARENT);
+                drawFootprintIcon(dc, stepsX, stepsY - 6, iconSize);
+                
+                // 绘制步数数值
+                dc.setColor(0xFF9900, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(stepsX, stepsY + 5, Graphics.FONT_SYSTEM_XTINY, stepsValue, Graphics.TEXT_JUSTIFY_CENTER);
             }
             
-            // 绘制电池图标
-            var batteryIconX = batteryX - iconSize;
-            var batteryTextX = batteryX;
+            // 3. 绘制卡路里数据 (左下方) - 根据设置显示
+            var showCalories = true;
+            if (settings != null && settings.hasKey("showCalories")) {
+                showCalories = settings["showCalories"];
+            }
             
-            dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
-            drawBatteryIcon(dc, batteryIconX, batteryY, iconSize);
+            if (showCalories) {
+                var caloriesValue = "--";
+                if (activityInfo != null && activityInfo.calories != null) {
+                    caloriesValue = activityInfo.calories.toString();
+                }
+                
+                // 绘制卡路里图标
+                dc.setColor(0xFF6600, Graphics.COLOR_TRANSPARENT);
+                drawFireIcon(dc, caloriesX, caloriesY - 6, iconSize);
+                
+                // 绘制卡路里数值
+                dc.setColor(0xFF6600, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(caloriesX, caloriesY + 5, Graphics.FONT_SYSTEM_XTINY, caloriesValue, Graphics.TEXT_JUSTIFY_CENTER);
+            }
             
-            // 绘制电量数值
-            dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(batteryTextX, batteryY, Graphics.FONT_SYSTEM_XTINY, batteryValue, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+            // 4. 绘制天气数据 (右下方) - 根据设置显示
+            var showWeather = true;
+            if (settings != null && settings.hasKey("showWeather")) {
+                showWeather = settings["showWeather"];
+            }
+            
+            if (showWeather) {
+                var weatherData = getWeatherData();
+                var temperature = weatherData[:temperature];
+                var weatherValue;
+                if (temperature instanceof Float || temperature instanceof Double) {
+                    weatherValue = Math.round(temperature).toNumber().toString() + "°";
+                } else {
+                    weatherValue = temperature.toString() + "°";
+                }
+                var weatherCondition = weatherData[:condition];
+                
+                // 绘制天气图标
+                drawWeatherIcon(dc, weatherX, weatherY - 6, iconSize, weatherCondition);
+                
+                // 绘制天气数值
+                dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(weatherX, weatherY + 5, Graphics.FONT_SYSTEM_XTINY, weatherValue, Graphics.TEXT_JUSTIFY_CENTER);
+            }
+            
+            // 5. 绘制电量数据 (底部中间) - 根据设置显示
+            var showBattery = true;
+            if (settings != null && settings.hasKey("showBattery")) {
+                showBattery = settings["showBattery"];
+            }
+            
+            if (showBattery) {
+                var batteryValue = "--";
+                if (systemStats != null && systemStats.battery != null) {
+                    var battery = systemStats.battery.toNumber();
+                    batteryValue = battery.toString() + "%";
+                }
+                
+                // 绘制电池图标
+                var batteryIconX = batteryX - iconSize;
+                var batteryTextX = batteryX;
+                
+                dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+                drawBatteryIcon(dc, batteryIconX, batteryY, iconSize);
+                
+                // 绘制电量数值
+                dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(batteryTextX, batteryY, Graphics.FONT_SYSTEM_XTINY, batteryValue, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+            }
             
         } catch (ex) {
             // 静默处理错误

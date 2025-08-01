@@ -479,8 +479,18 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
      * @param elementColors 五行配色方案
      */
     private function renderFR255WatchFace(dc as Graphics.Dc, elementColors as Dictionary) as Void {
+        // 准备设置参数
+        var settings = {
+            "showSteps" => _showSteps,
+            "showHeartRate" => _showHeartRate,
+            "showCalories" => _showCalories,
+            "showBattery" => _showBattery,
+            "showWeather" => _showWeather,
+            "showDateInfo" => _showDateInfo
+        };
+        
         // 使用FR255专用渲染器
-        _fr255Renderer.renderWatchFace(dc, elementColors);
+        _fr255Renderer.renderWatchFace(dc, elementColors, settings);
     }
 
     /**
@@ -489,8 +499,18 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
      * @param elementColors 五行配色方案
      */
     private function renderFR265SWatchFace(dc as Graphics.Dc, elementColors as Dictionary) as Void {
+        // 准备设置参数
+        var settings = {
+            "showSteps" => _showSteps,
+            "showHeartRate" => _showHeartRate,
+            "showCalories" => _showCalories,
+            "showBattery" => _showBattery,
+            "showWeather" => _showWeather,
+            "showDateInfo" => _showDateInfo
+        };
+        
         // 使用FR265S专用渲染器
-        _fr265sRenderer.renderWatchFace(dc, elementColors);
+        _fr265sRenderer.renderWatchFace(dc, elementColors, settings);
     }
 
     /**

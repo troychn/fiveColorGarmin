@@ -64,8 +64,9 @@ class FR265SRenderer {
      * 渲染FR265S表盘 - 使用FR965的显示逻辑
      * @param dc 绘图上下文
      * @param elementColors 五行配色方案
+     * @param settings 用户设置参数
      */
-    public function renderWatchFace(dc as Graphics.Dc, elementColors as Dictionary) as Void {
+    public function renderWatchFace(dc as Graphics.Dc, elementColors as Dictionary, settings as Dictionary or Null) as Void {
         // 清空屏幕
         dc.setColor(elementColors["backgroundColor"], Graphics.COLOR_TRANSPARENT);
         dc.clear();
@@ -83,10 +84,10 @@ class FR265SRenderer {
         drawFR265SNumbers(dc, elementColors);
         
         // 绘制健康数据
-        drawFR265SHealthData(dc, elementColors);
+        drawFR265SHealthData(dc, elementColors, settings);
         
         // 绘制日期信息
-        drawFR265SDateInfo(dc, clockTime, elementColors);
+        drawFR265SDateInfo(dc, clockTime, elementColors, settings);
         
         // 绘制指针
         drawFR265SPointers(dc, clockTime, elementColors);
@@ -185,7 +186,13 @@ class FR265SRenderer {
      * @param dc 绘图上下文
      * @param elementColors 配色方案
      */
-    private function drawFR265SHealthData(dc as Graphics.Dc, elementColors as Dictionary) as Void {
+    /**
+     * 绘制FR265S健康数据 - 根据设置显示
+     * @param dc 绘图上下文
+     * @param elementColors 五行配色方案
+     * @param settings 用户设置参数
+     */
+    private function drawFR265SHealthData(dc as Graphics.Dc, elementColors as Dictionary, settings as Dictionary or Null) as Void {
         try {
             // 计算健康数据位置 - FR265S专用：心率和步数向下移动6像素
             var iconSize = 16;
@@ -210,93 +217,123 @@ class FR265SRenderer {
             var batteryX = centerX;
             var batteryY = centerY + 92; // 从+86再向下移动6像素到+92
             
-            // 1. 绘制心率数据 (左上方)
-            var heartRate = getHeartRate();
+            // 1. 绘制心率数据 (左上方) - 根据设置显示
+            var showHeartRate = true;
+            if (settings != null && settings.hasKey("showHeartRate")) {
+                showHeartRate = settings["showHeartRate"];
+            }
             
-            // 绘制心形图标
-            dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
-            drawFR265SHeartIcon(dc, heartRateX, heartRateY - 8, iconSize);
+            if (showHeartRate) {
+                var heartRate = getHeartRate();
+                
+                // 绘制心形图标
+                dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+                drawFR265SHeartIcon(dc, heartRateX, heartRateY - 8, iconSize);
+                
+                // 绘制心率数值
+                var heartRateValue = heartRate.toString();
+                dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(heartRateX, heartRateY + 6, Graphics.FONT_SYSTEM_XTINY, heartRateValue, Graphics.TEXT_JUSTIFY_CENTER);
+            }
             
-            // 绘制心率数值
-            var heartRateValue = heartRate.toString();
-            dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(heartRateX, heartRateY + 6, Graphics.FONT_SYSTEM_XTINY, heartRateValue, Graphics.TEXT_JUSTIFY_CENTER);
+            // 2. 绘制步数数据 (右上方) - 根据设置显示
+            var showSteps = true;
+            if (settings != null && settings.hasKey("showSteps")) {
+                showSteps = settings["showSteps"];
+            }
             
-            // 2. 绘制步数数据 (右上方)
-            var steps = getSteps();
-            var stepsValue = steps.toString();
+            if (showSteps) {
+                var steps = getSteps();
+                var stepsValue = steps.toString();
+                
+                // 绘制脚印图标
+                dc.setColor(0xFF9900, Graphics.COLOR_TRANSPARENT); // 橙色
+                drawFR265SFootprintIcon(dc, stepsX, stepsY - 8, iconSize);
+                
+                // 绘制步数数值
+                dc.setColor(0xFF9900, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(stepsX, stepsY + 6, Graphics.FONT_SYSTEM_XTINY, stepsValue, Graphics.TEXT_JUSTIFY_CENTER);
+            }
             
-            // 绘制脚印图标
-            dc.setColor(0xFF9900, Graphics.COLOR_TRANSPARENT); // 橙色
-            drawFR265SFootprintIcon(dc, stepsX, stepsY - 8, iconSize);
+            // 3. 绘制卡路里数据 (左下方) - 根据设置显示
+            var showCalories = true;
+            if (settings != null && settings.hasKey("showCalories")) {
+                showCalories = settings["showCalories"];
+            }
             
-            // 绘制步数数值
-            dc.setColor(0xFF9900, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(stepsX, stepsY + 6, Graphics.FONT_SYSTEM_XTINY, stepsValue, Graphics.TEXT_JUSTIFY_CENTER);
+            if (showCalories) {
+                var calories = getCalories();
+                var caloriesValue = calories.toString();
+                
+                // 绘制火焰图标
+                dc.setColor(0xFF6600, Graphics.COLOR_TRANSPARENT); // 火焰色
+                drawFR265SFireIcon(dc, caloriesX, caloriesY - 8, iconSize);
+                
+                // 绘制卡路里数值
+                dc.setColor(0xFF6600, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(caloriesX, caloriesY + 6, Graphics.FONT_SYSTEM_XTINY, caloriesValue, Graphics.TEXT_JUSTIFY_CENTER);
+            }
             
-            // 3. 绘制卡路里数据 (左下方)
-            var calories = getCalories();
-            var caloriesValue = calories.toString();
+            // 4. 绘制天气数据 (右下方) - 根据设置显示
+            var showWeather = true;
+            if (settings != null && settings.hasKey("showWeather")) {
+                showWeather = settings["showWeather"];
+            }
             
-            // 绘制火焰图标
-            dc.setColor(0xFF6600, Graphics.COLOR_TRANSPARENT); // 火焰色
-            drawFR265SFireIcon(dc, caloriesX, caloriesY - 8, iconSize);
-            
-            // 绘制卡路里数值
-            dc.setColor(0xFF6600, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(caloriesX, caloriesY + 6, Graphics.FONT_SYSTEM_XTINY, caloriesValue, Graphics.TEXT_JUSTIFY_CENTER);
-            
-            // 4. 绘制天气数据 (右下方)
-            var weatherData = getWeatherData();
-            
-            // System.println("[FR265S] 天气数据: " + weatherData);
-            
-            // 格式化温度显示
-            var temperature = weatherData[:temperature];
-            var weatherValue;
-            if (temperature != null) {
-                if (temperature instanceof Float || temperature instanceof Double) {
-                    var roundedTemp = Math.round(temperature).toNumber();
-                    weatherValue = roundedTemp.toString() + "°";
+            if (showWeather) {
+                var weatherData = getWeatherData();
+                
+                // 格式化温度显示
+                var temperature = weatherData[:temperature];
+                var weatherValue;
+                if (temperature != null) {
+                    if (temperature instanceof Float || temperature instanceof Double) {
+                        var roundedTemp = Math.round(temperature).toNumber();
+                        weatherValue = roundedTemp.toString() + "°";
+                    } else {
+                        weatherValue = temperature.toString() + "°";
+                    }
                 } else {
-                    weatherValue = temperature.toString() + "°";
+                    weatherValue = "--°";
                 }
-            } else {
-                weatherValue = "--°";
+                
+                var weatherCondition = weatherData[:condition];
+                // 确保weatherCondition不为null
+                if (weatherCondition == null) {
+                    weatherCondition = Weather.CONDITION_CLEAR;
+                }
+                
+                // 绘制天气图标
+                dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
+                drawFR265SWeatherIcon(dc, weatherX, weatherY - 8, iconSize, weatherCondition);
+                
+                // 绘制天气数值
+                dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(weatherX, weatherY + 6, Graphics.FONT_SYSTEM_XTINY, weatherValue, Graphics.TEXT_JUSTIFY_CENTER);
             }
             
-            var weatherCondition = weatherData[:condition];
-            // 确保weatherCondition不为null
-            if (weatherCondition == null) {
-                weatherCondition = Weather.CONDITION_CLEAR;
-                // System.println("[FR265S] 天气条件为null，使用默认晴天");
+            // 5. 绘制电量数据 (底部中间) - 根据设置显示
+            var showBattery = true;
+            if (settings != null && settings.hasKey("showBattery")) {
+                showBattery = settings["showBattery"];
             }
             
-            // System.println("[FR265S] 最终天气条件: " + weatherCondition + ", 温度: " + weatherValue);
-            
-            // 绘制天气图标
-            dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
-            drawFR265SWeatherIcon(dc, weatherX, weatherY - 8, iconSize, weatherCondition);
-            
-            // 绘制天气数值
-            dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(weatherX, weatherY + 6, Graphics.FONT_SYSTEM_XTINY, weatherValue, Graphics.TEXT_JUSTIFY_CENTER);
-            
-            // 5. 绘制电量数据 (底部中间)
-            var battery = getBattery();
-            var batteryValue = battery.toString() + "%";
-            
-            // 绘制电池图标 (平躺) - 精确控制间距
-            var batteryIconX = batteryX - iconSize;
-            var batteryTextX = batteryX;
-            
-            // 绘制电池图标
-            dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
-            drawFR265SBatteryIcon(dc, batteryIconX, batteryY, iconSize);
-            
-            // 绘制电量数值
-            dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(batteryTextX, batteryY, Graphics.FONT_SYSTEM_XTINY, batteryValue, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+            if (showBattery) {
+                var battery = getBattery();
+                var batteryValue = battery.toString() + "%";
+                
+                // 绘制电池图标 (平躺) - 精确控制间距
+                var batteryIconX = batteryX - iconSize;
+                var batteryTextX = batteryX;
+                
+                // 绘制电池图标
+                dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+                drawFR265SBatteryIcon(dc, batteryIconX, batteryY, iconSize);
+                
+                // 绘制电量数值
+                dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(batteryTextX, batteryY, Graphics.FONT_SYSTEM_XTINY, batteryValue, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+            }
             
         } catch (ex) {
             // 静默处理异常
@@ -309,7 +346,14 @@ class FR265SRenderer {
      * @param clockTime 时间信息
      * @param elementColors 配色方案
      */
-    private function drawFR265SDateInfo(dc as Graphics.Dc, clockTime as Time.Moment, elementColors as Dictionary) as Void {
+    /**
+     * 绘制FR265S日期信息 - 根据设置显示
+     * @param dc 绘图上下文
+     * @param clockTime 时间信息
+     * @param elementColors 五行配色方案
+     * @param settings 用户设置参数
+     */
+    private function drawFR265SDateInfo(dc as Graphics.Dc, clockTime as Time.Moment, elementColors as Dictionary, settings as Dictionary or Null) as Void {
         // System.println("[FR265S] 开始绘制中心时间和日期信息");
         
         try {
@@ -387,23 +431,28 @@ class FR265SRenderer {
             
             // System.println("[FR265S] 布局计算: 总宽度=" + totalWidth + ", 起始X=" + startX + ", Y=" + dateWeekY);
             
-            // 设置文本颜色为绿色
-            dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+            // 绘制日期信息 - 根据设置显示
+            var showDateInfo = true;
+            if (settings != null && settings.hasKey("showDateInfo")) {
+                showDateInfo = settings["showDateInfo"];
+            }
             
-            // 绘制日期
-            var dateX = startX + dateWidth / 2;
-            dc.drawText(dateX, dateWeekY, fontToUse, dateString, Graphics.TEXT_JUSTIFY_CENTER);
-            // System.println("[FR265S] 日期绘制完成: " + dateString + " at (" + dateX + ", " + dateWeekY + ")");
-            
-            // 绘制农历
-            var lunarX = startX + dateWidth + spacing + lunarWidth / 2;
-            dc.drawText(lunarX, dateWeekY, fontToUse, lunarDate, Graphics.TEXT_JUSTIFY_CENTER);
-            // System.println("[FR265S] 农历绘制完成: " + lunarDate + " at (" + lunarX + ", " + dateWeekY + ")");
-            
-            // 绘制星期
-            var weekX = startX + dateWidth + spacing + lunarWidth + spacing + weekWidth / 2;
-            dc.drawText(weekX, dateWeekY, fontToUse, weekText, Graphics.TEXT_JUSTIFY_CENTER);
-            // System.println("[FR265S] 星期绘制完成: " + weekText + " at (" + weekX + ", " + dateWeekY + ")");
+            if (showDateInfo) {
+                // 设置文本颜色为绿色
+                dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+                
+                // 绘制日期
+                var dateX = startX + dateWidth / 2;
+                dc.drawText(dateX, dateWeekY, fontToUse, dateString, Graphics.TEXT_JUSTIFY_CENTER);
+                
+                // 绘制农历
+                var lunarX = startX + dateWidth + spacing + lunarWidth / 2;
+                dc.drawText(lunarX, dateWeekY, fontToUse, lunarDate, Graphics.TEXT_JUSTIFY_CENTER);
+                
+                // 绘制星期
+                var weekX = startX + dateWidth + spacing + lunarWidth + spacing + weekWidth / 2;
+                dc.drawText(weekX, dateWeekY, fontToUse, weekText, Graphics.TEXT_JUSTIFY_CENTER);
+            }
             
             // System.println("[FR265S] 中心时间和日期信息绘制完成");
             
