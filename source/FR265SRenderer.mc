@@ -600,38 +600,103 @@ class FR265SRenderer {
     }
     
     /**
-     * 绘制FR265S明日配色小指针
+     * 绘制FR265S明日配色小指针 - 菱形形状，从指针尖端向内5像素开始
      * @param dc 绘图上下文
      * @param angle 指针角度
      * @param length 主指针长度
      * @param width 主指针宽度
-     * @param bodyColor 主指针颜色
-     * @param tipColor 小指针颜色
+     * @param bodyColor 主指针颜色（今日配色）
+     * @param tipColor 小指针颜色（明日配色）
      * @param sin 角度正弦值
      * @param cos 角度余弦值
      * @param perpSin 垂直角度正弦值
      * @param perpCos 垂直角度余弦值
      */
     private function drawFR265STomorrowMiniPointer(dc as Graphics.Dc, angle as Float, length as Number, width as Number, bodyColor as Number, tipColor as Number, sin as Float, cos as Float, perpSin as Float, perpCos as Float) as Void {
-        // 小指针参数
+        // 始终绘制明日配色小指针，无论今日配色与明日配色是否相同
+        
+        // 小指针的尺寸参数（按主指针比例缩小六分之一）
+        var miniScale = 5.0 / 6.0; // 缩小六分之一
+        var miniLength = (length * miniScale).toNumber();
+        var miniWidth = (width * 0.4).toNumber(); // 宽度设为主指针的40%
+        
+        // 菱形小指针参数（与FR965保持一致）
         var diamondLength = 30; // 菱形长度
-        var diamondWidth = (width * 0.6).toNumber(); // 菱形最大宽度
+        var diamondWidth = miniWidth; // 菱形最大宽度（与FR965一致，不增加50%）
         var offsetFromTip = 5; // 从指针尖端向内的偏移距离
         
         // 计算菱形的关键点坐标
-        var diamondStartX = centerX + ((length - offsetFromTip) * sin).toNumber();
-        var diamondStartY = centerY - ((length - offsetFromTip) * cos).toNumber();
+        // 菱形起始点（从指针尖端向内5像素）
+        var diamondStartX = centerX + ((miniLength - offsetFromTip) * sin).toNumber();
+        var diamondStartY = centerY - ((miniLength - offsetFromTip) * cos).toNumber();
         
-        var diamondEndX = centerX + ((length - offsetFromTip - diamondLength) * sin).toNumber();
-        var diamondEndY = centerY - ((length - offsetFromTip - diamondLength) * cos).toNumber();
+        // 菱形结束点（向内延伸diamondLength像素）
+        var diamondEndX = centerX + ((miniLength - offsetFromTip - diamondLength) * sin).toNumber();
+        var diamondEndY = centerY - ((miniLength - offsetFromTip - diamondLength) * cos).toNumber();
         
-        var diamondMidX = centerX + ((length - offsetFromTip - diamondLength / 2) * sin).toNumber();
-        var diamondMidY = centerY - ((length - offsetFromTip - diamondLength / 2) * cos).toNumber();
+        // 菱形中点（最宽处）
+        var diamondMidX = centerX + ((miniLength - offsetFromTip - diamondLength/2) * sin).toNumber();
+        var diamondMidY = centerY - ((miniLength - offsetFromTip - diamondLength/2) * cos).toNumber();
         
-        var diamondLeftX = diamondMidX + (diamondWidth / 2 * perpSin).toNumber();
-        var diamondLeftY = diamondMidY - (diamondWidth / 2 * perpCos).toNumber();
-        var diamondRightX = diamondMidX - (diamondWidth / 2 * perpSin).toNumber();
-        var diamondRightY = diamondMidY + (diamondWidth / 2 * perpCos).toNumber();
+        // 计算菱形左右边界点
+        var diamondHalfWidth = diamondWidth / 2;
+        var diamondLeftX = diamondMidX + (diamondHalfWidth * perpSin).toNumber();
+        var diamondLeftY = diamondMidY - (diamondHalfWidth * perpCos).toNumber();
+        var diamondRightX = diamondMidX - (diamondHalfWidth * perpSin).toNumber();
+        var diamondRightY = diamondMidY + (diamondHalfWidth * perpCos).toNumber();
+        
+        // 根据今日配色与明日配色的关系选择边框策略
+        var borderOffset = 2;
+        var borderDiamondHalfWidth = diamondHalfWidth + borderOffset;
+        
+        // 计算边框菱形的关键点
+        var borderDiamondStartX = centerX + ((miniLength - offsetFromTip + borderOffset) * sin).toNumber();
+        var borderDiamondStartY = centerY - ((miniLength - offsetFromTip + borderOffset) * cos).toNumber();
+        
+        var borderDiamondEndX = centerX + ((miniLength - offsetFromTip - diamondLength - borderOffset) * sin).toNumber();
+        var borderDiamondEndY = centerY - ((miniLength - offsetFromTip - diamondLength - borderOffset) * cos).toNumber();
+        
+        var borderDiamondLeftX = diamondMidX + (borderDiamondHalfWidth * perpSin).toNumber();
+        var borderDiamondLeftY = diamondMidY - (borderDiamondHalfWidth * perpCos).toNumber();
+        var borderDiamondRightX = diamondMidX - (borderDiamondHalfWidth * perpSin).toNumber();
+        var borderDiamondRightY = diamondMidY + (borderDiamondHalfWidth * perpCos).toNumber();
+        
+        // 边框颜色逻辑：如果今日配色与明日配色都是黑色，则使用白色边框；其他情况都使用透明边框（黑色）
+        var borderColor = (bodyColor == 0x000000 && tipColor == 0x000000) ? 0xFFFFFF : 0x000000;
+        dc.setColor(borderColor, Graphics.COLOR_TRANSPARENT);
+        var borderPoints = [
+            [borderDiamondStartX, borderDiamondStartY],  // 菱形头部
+            [borderDiamondLeftX, borderDiamondLeftY],    // 菱形左侧
+            [borderDiamondEndX, borderDiamondEndY],      // 菱形尾部
+            [borderDiamondRightX, borderDiamondRightY]   // 菱形右侧
+        ];
+        dc.fillPolygon(borderPoints);
+        
+        // 只有当今日配色与明日配色都是黑色时，才绘制白色描边
+        if (bodyColor == 0x000000 && tipColor == 0x000000) {
+            var strokeOffset = 1;
+            var strokeDiamondHalfWidth = diamondHalfWidth + strokeOffset;
+            
+            var strokeDiamondStartX = centerX + ((miniLength - offsetFromTip + strokeOffset) * sin).toNumber();
+            var strokeDiamondStartY = centerY - ((miniLength - offsetFromTip + strokeOffset) * cos).toNumber();
+            
+            var strokeDiamondEndX = centerX + ((miniLength - offsetFromTip - diamondLength - strokeOffset) * sin).toNumber();
+            var strokeDiamondEndY = centerY - ((miniLength - offsetFromTip - diamondLength - strokeOffset) * cos).toNumber();
+            
+            var strokeDiamondLeftX = diamondMidX + (strokeDiamondHalfWidth * perpSin).toNumber();
+            var strokeDiamondLeftY = diamondMidY - (strokeDiamondHalfWidth * perpCos).toNumber();
+            var strokeDiamondRightX = diamondMidX - (strokeDiamondHalfWidth * perpSin).toNumber();
+            var strokeDiamondRightY = diamondMidY + (strokeDiamondHalfWidth * perpCos).toNumber();
+            
+            dc.setColor(0xFFFFFF, Graphics.COLOR_TRANSPARENT);
+            var strokePoints = [
+                [strokeDiamondStartX, strokeDiamondStartY],  // 菱形头部
+                [strokeDiamondLeftX, strokeDiamondLeftY],    // 菱形左侧
+                [strokeDiamondEndX, strokeDiamondEndY],      // 菱形尾部
+                [strokeDiamondRightX, strokeDiamondRightY]   // 菱形右侧
+            ];
+            dc.fillPolygon(strokePoints);
+        }
         
         // 绘制小指针主体（明日配色）- 菱形形状
         dc.setColor(tipColor, Graphics.COLOR_TRANSPARENT);
@@ -642,6 +707,8 @@ class FR265SRenderer {
             [diamondRightX, diamondRightY]   // 菱形右侧
         ];
         dc.fillPolygon(miniPointerPoints);
+        
+        // 菱形小指针不需要配重，保持简洁的菱形设计
     }
     
     // 辅助方法 - 获取健康数据
