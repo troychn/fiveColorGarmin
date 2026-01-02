@@ -22,7 +22,7 @@ BIN_DIR="bin"
 OUTPUT_IQ="${BIN_DIR}/${PROJECT_NAME}.iq"
 
 # SDK路径配置 - 使用与build.sh相同的SDK版本
-SDK_PATH="/Users/zengqiuyan/Library/Application Support/Garmin/ConnectIQ/Sdks/connectiq-sdk-mac-8.2.1-2025-06-19-f69b94140"
+SDK_PATH="${HOME}/Library/Application Support/Garmin/ConnectIQ/Sdks/connectiq-sdk-mac-8.4.0-2025-12-03-5122605dc"
 API_DB="$SDK_PATH/bin/api.db"
 PROJECT_INFO="$SDK_PATH/bin/projectInfo.xml"
 
@@ -634,6 +634,56 @@ build_all_release() {
     fi
 }
 
+# 函数：检查并启动模拟器
+check_and_start_simulator() {
+    print_info "检查模拟器状态..."
+    if ! pgrep -f "simulator" > /dev/null && ! pgrep -f "connectiq" > /dev/null; then
+        print_info "启动模拟器..."
+        connectiq &
+        sleep 10  # 增加等待时间到10秒
+    else
+        print_info "模拟器已在运行"
+    fi
+}
+
+# 函数：带重试机制的部署
+deploy_to_simulator_with_retry() {
+    local prg_file=$1
+    local device_id=$2
+    local max_retries=1
+    local retry_count=0
+
+    # 确保模拟器运行
+    check_and_start_simulator
+
+    while [ $retry_count -le $max_retries ]; do
+        print_info "尝试部署到模拟器 (尝试 $((retry_count+1))/$((max_retries+1)))..."
+        
+        if monkeydo "$prg_file" "$device_id"; then
+            print_success "部署成功"
+            return 0
+        fi
+        
+        print_warning "部署失败"
+        
+        if [ $retry_count -lt $max_retries ]; then
+            print_warning "尝试重启模拟器..."
+            pkill -f "simulator" || true
+            pkill -f "connectiq" || true
+            sleep 2
+            
+            print_info "重新启动模拟器..."
+            connectiq &
+            sleep 15  # 重启后等待更长时间
+        fi
+        
+        ((retry_count++))
+    done
+    
+    print_error "部署到模拟器失败，请尝试手动启动模拟器后重试"
+    return 1
+}
+
 # 函数：部署FR965调试版本到模拟器
 deploy_fr965_debug_to_simulator() {
     print_info "部署FR965调试版本到模拟器..."
@@ -648,20 +698,7 @@ deploy_fr965_debug_to_simulator() {
         fi
     fi
     
-    # 检查模拟器是否运行
-    if ! pgrep -f "simulator" > /dev/null && ! pgrep -f "connectiq" > /dev/null; then
-        print_info "启动模拟器..."
-        connectiq &
-        sleep 5
-    fi
-    
-    # 部署到模拟器
-    if monkeydo "$fr965_debug_prg" fr965; then
-        print_success "FR965调试版本已部署到模拟器"
-    else
-        print_error "FR965调试版本部署到模拟器失败"
-        exit 1
-    fi
+    deploy_to_simulator_with_retry "$fr965_debug_prg" "fr965"
 }
 
 # 函数：部署FR965发布版本到模拟器
@@ -678,20 +715,7 @@ deploy_fr965_release_to_simulator() {
         fi
     fi
     
-    # 检查模拟器是否运行
-    if ! pgrep -f "simulator" > /dev/null && ! pgrep -f "connectiq" > /dev/null; then
-        print_info "启动模拟器..."
-        connectiq &
-        sleep 5
-    fi
-    
-    # 部署到模拟器
-    if monkeydo "$fr965_release_prg" fr965; then
-        print_success "FR965发布版本已部署到模拟器"
-    else
-        print_error "FR965发布版本部署到模拟器失败"
-        exit 1
-    fi
+    deploy_to_simulator_with_retry "$fr965_release_prg" "fr965"
 }
 
 # 函数：部署FR255发布版本到模拟器

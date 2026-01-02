@@ -73,10 +73,11 @@ fi
 # 检查应用ID
 app_id=$(grep -o 'id="[^"]*"' manifest.xml | head -1 | sed 's/id="\(.*\)"/\1/')
 if [ -n "$app_id" ]; then
-    if [[ $app_id =~ ^[0-9A-F]{32}$ ]]; then
+    # 允许标准UUID格式（带连字符）或32位无连字符格式
+    if [[ $app_id =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]] || [[ $app_id =~ ^[0-9a-fA-F]{32}$ ]]; then
         check_pass "应用ID格式正确: $app_id"
     else
-        check_fail "应用ID格式错误: $app_id (必须是32位十六进制)"
+        check_fail "应用ID格式错误: $app_id (必须是UUID格式或32位十六进制)"
         exit 1
     fi
 else

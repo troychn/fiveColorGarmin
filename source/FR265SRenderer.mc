@@ -389,7 +389,7 @@ class FR265SRenderer {
             // 转换月份
             var monthNum = convertMonthToNumber(currentMonth);
             var dayNum = (currentDay != null && currentDay instanceof Number) ? currentDay : 27;
-            var yearNum = (currentYear != null && currentYear instanceof Number) ? currentYear : 2024;
+            var yearNum = (currentYear != null && currentYear instanceof Number) ? currentYear : getCurrentYear();
             
             // System.println("[FR265S] 转换后日期数据: 年=" + yearNum + ", 月=" + monthNum + ", 日=" + dayNum);
             
@@ -1105,7 +1105,48 @@ class FR265SRenderer {
      * @param monthEnum 月份枚举值
      * @return 月份数字(1-12)
      */
-    private function convertMonthToNumber(monthEnum) as Number {
+     /**
+      * 获取动态当前年份，避免硬编码
+      * @return 当前年份
+      */
+     private function getCurrentYear() as Number {
+         var today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
+         var year = today.year;
+         return (year != null && year instanceof Number) ? year : 2026;
+     }
+     
+     /**
+      * 使用蔡勒公式计算任意日期是星期几
+      * @param year 年份
+      * @param month 月份 (1-12)
+      * @param day 日期 (1-31)
+      * @return 星期几 (1=星期日, 2=星期一, ..., 7=星期六)
+      */
+     private function calculateZellerWeekday(year as Number, month as Number, day as Number) as Number {
+         // 蔡勒公式：1月和2月视为上一年的13月和14月
+         var m = month;
+         var y = year;
+         
+         if (m == 1 || m == 2) {
+             m = m + 12;
+             y = y - 1;
+         }
+         
+         var c = y / 100;  // 世纪数
+         var y_mod = y % 100;  // 年份后两位
+         
+         // 蔡勒公式
+         var w = (y_mod + y_mod / 4 + c / 4 - 2 * c + 26 * (m + 1) / 10 + day - 1) % 7;
+         
+         // 转换为我们的格式：1=星期日, 2=星期一, ..., 7=星期六
+         if (w <= 0) {
+             w = w + 7;
+         }
+         
+         return w + 1;  // 调整为1-7范围
+     }
+     
+     private function convertMonthToNumber(monthEnum) as Number {
         // System.println("[FR265S] convertMonthToNumber输入: " + monthEnum);
         
         // 优先处理数字类型（真机环境常见）
@@ -1176,12 +1217,14 @@ class FR265SRenderer {
         // System.println("[FR265S] calculateDayOfWeek输入: " + year + "-" + month + "-" + day);
         
         // 使用基于已知基准日期的相对计算方法（与FR965相同）
-        // 基准：2025年7月31日是星期四（dayOfWeek = 5）
-        // 注意：1=星期日, 2=星期一, 3=星期二, 4=星期三, 5=星期四, 6=星期五, 7=星期六
-        var baseYear = 2025;
-        var baseMonth = 7;
-        var baseDay = 31;
-        var baseDayOfWeek = 5; // 星期四
+        // 使用动态基准日期，避免每年修改
+        var currentYear = getCurrentYear();
+        
+        // 动态计算基准日期：使用当前年份的1月1日
+        var baseYear = currentYear;
+        var baseMonth = 1;
+        var baseDay = 1;
+        var baseDayOfWeek = calculateZellerWeekday(baseYear, baseMonth, baseDay);
         
         // 计算目标日期与基准日期的天数差
         var targetDays = calculateDaysSince1900(year, month, day);
@@ -1338,10 +1381,10 @@ class FR265SRenderer {
             0x0d520
         ];
         
-        // 基准日期：1900年1月30日 = 农历1900年正月初一
+        // 基准日期：1900年1月31日 = 农历1900年正月初一
         var baseYear = 1900;
         var baseMonth = 1;
-        var baseDay = 30;
+        var baseDay = 31;
         var baseJulianDay = getJulianDay(baseYear, baseMonth, baseDay);
         var targetJulianDay = getJulianDay(year, month, day);
         var offset = targetJulianDay - baseJulianDay;
@@ -1471,7 +1514,7 @@ class FR265SRenderer {
         
         // 计算12个普通月的额外天数
         for (var month = 1; month <= 12; month++) {
-            if (((yearData >> (month + 3)) & 0x1) != 0) {
+            if (((yearData >> (16 - month)) & 0x1) != 0) {
                 totalDays += 1;
             }
         }
@@ -1496,7 +1539,7 @@ class FR265SRenderer {
         }
         
         var info = lunarInfo[yearIndex];
-        return ((info >> (lunarMonth + 3)) & 0x1) ? 30 : 29;
+        return ((info >> (16 - lunarMonth)) & 0x1) ? 30 : 29;
     }
     
     /**
@@ -1585,20 +1628,25 @@ class FR265SRenderer {
             var day = today.day;
             
             // 安全转换为数字类型
-            var yearNum = (year != null && year instanceof Number) ? year : 2025;
+            var yearNum = (year != null && year instanceof Number) ? year : 2026;
             var monthNum = convertMonthToNumber(month);
             var dayNum = (day != null && day instanceof Number) ? day : 29;
             
             System.println("[FR265S] 日期: " + yearNum + "-" + monthNum + "-" + dayNum);
             
-            // 修正的传统五行纳甲算法 - 基于天干地支计算日五行
-            var yearTianGan = (yearNum - 4) % 10;
-            var yearDiZhi = (yearNum - 4) % 12;
+            // 使用精确的儒略日算法计算日干支
+            var jd = getJulianDay(yearNum, monthNum, dayNum);
             
-            // 计算日天干地支（简化算法）
-            var dayOfYear = getDayOfYear(monthNum, dayNum, yearNum);
-            var dayTianGan = (yearTianGan * 5 + monthNum * 2 + dayNum) % 10;
-            var dayDiZhi = (dayOfYear + yearDiZhi) % 12;
+            // 修正值 +18 是基于 2026-01-02 (乙巳, JD 2461043) 推算得出的
+            // JD 2461043 % 60 = 23
+            // 乙巳 = 41
+            // (23 + 18) % 60 = 41
+            var ganZhiIndex = (jd + 18) % 60;
+            if (ganZhiIndex < 0) {
+                ganZhiIndex += 60;
+            }
+            
+            var dayDiZhi = ganZhiIndex % 12;
             
             System.println("[FR265S] 日地支: " + dayDiZhi);
             
@@ -1619,9 +1667,12 @@ class FR265SRenderer {
             System.println("[FR265S] 日五行: " + dayElement);
             
             // 根据五行相生理论计算配色
-            var mostLucky = (dayElement + 1) % 5;        // 大吉：日五行生的五行
-            var secondLucky = dayElement;                // 次吉：日五行本身
-            var normalLucky = (dayElement + 3) % 5;      // 平平：克日五行的五行
+            // 大吉：生我者（印）。火日，木（绿）生火。
+            // 次吉：克我者（官杀）。火日，水（黑）克火。
+            // 平平：我生者（食伤）。火日，火生土（黄）。
+            var mostLucky = (dayElement + 4) % 5;        // 大吉：生我者
+            var secondLucky = (dayElement + 3) % 5;      // 次吉：克我者
+            var normalLucky = (dayElement + 1) % 5;      // 平平：我生者
             
             // 定义五行颜色映射
             var elementColorMap = [

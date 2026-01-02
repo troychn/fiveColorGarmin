@@ -146,7 +146,48 @@ class FR255Renderer {
     /**
      * 将月份枚举转换为数字
      */
-    private function convertMonthToNumber(monthEnum) as Number {
+    /**
+     * 获取动态当前年份，避免硬编码
+     * @return 当前年份
+     */
+    private function getCurrentYear() as Number {
+        var today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
+        var year = today.year;
+        return (year != null && year instanceof Number) ? year : 2026;
+    }
+    
+    /**
+     * 使用蔡勒公式计算任意日期是星期几
+     * @param year 年份
+     * @param month 月份 (1-12)
+     * @param day 日期 (1-31)
+     * @return 星期几 (1=星期日, 2=星期一, ..., 7=星期六)
+     */
+    private function calculateZellerWeekday(year as Number, month as Number, day as Number) as Number {
+        // 蔡勒公式：1月和2月视为上一年的13月和14月
+        var m = month;
+        var y = year;
+        
+        if (m == 1 || m == 2) {
+            m = m + 12;
+            y = y - 1;
+        }
+        
+        var c = y / 100;  // 世纪数
+        var y_mod = y % 100;  // 年份后两位
+        
+        // 蔡勒公式
+        var w = (y_mod + y_mod / 4 + c / 4 - 2 * c + 26 * (m + 1) / 10 + day - 1) % 7;
+        
+        // 转换为我们的格式：1=星期日, 2=星期一, ..., 7=星期六
+        if (w <= 0) {
+            w = w + 7;
+        }
+        
+        return w + 1;  // 调整为1-7范围
+    }
+     
+     private function convertMonthToNumber(monthEnum) as Number {
         if (monthEnum == null) { 
             return 7; // 默认7月
         }
@@ -236,11 +277,14 @@ class FR255Renderer {
      */
     private function calculateDayOfWeek(year as Number, month as Number, day as Number) as Number {
         // 使用基于已知基准日期的相对计算方法
-        // 基准：2025年7月18日是星期五（dayOfWeek = 6）
-        var baseYear = 2025;
-        var baseMonth = 7;
-        var baseDay = 18;
-        var baseDayOfWeek = 6; // 星期五
+        // 使用动态基准日期，避免每年修改
+        var currentYear = getCurrentYear();
+        
+        // 动态计算基准日期：使用当前年份的1月1日
+        var baseYear = currentYear;
+        var baseMonth = 1;
+        var baseDay = 1;
+        var baseDayOfWeek = calculateZellerWeekday(baseYear, baseMonth, baseDay);
         
         // 计算目标日期与基准日期的天数差
         var targetDays = calculateDaysSince1900(year, month, day);
@@ -660,7 +704,7 @@ class FR255Renderer {
             // 安全的类型转换和默认值处理，参考FR965逻辑
             var monthNum = convertMonthToNumber(currentMonth);
             var dayNum = (currentDay != null && currentDay instanceof Number) ? currentDay : 29;
-            var yearNum = (currentYear != null && currentYear instanceof Number) ? currentYear : 2025;
+            var yearNum = (currentYear != null && currentYear instanceof Number) ? currentYear : getCurrentYear();
             
             // 日期转换完成，现在应该正确显示当前日期
             
@@ -979,7 +1023,7 @@ class FR255Renderer {
             var day = today.day;
             
             // 安全转换为数字类型
-            var yearNum = (year != null && year instanceof Number) ? year : 2025;
+            var yearNum = (year != null && year instanceof Number) ? year : getCurrentYear();
             var monthNum = convertMonthToNumber(month);
             var dayNum = (day != null && day instanceof Number) ? day : 29;
             

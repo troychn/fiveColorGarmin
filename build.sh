@@ -23,7 +23,7 @@ SIMULATOR_DEVICE="fr965"
 
 # SDK路径 - 使用8.2.1版本以支持2025.7.1后的应用商店要求
 # SDK_PATH="/Users/zengqiuyan/Library/Application Support/Garmin/ConnectIQ/Sdks/connectiq-sdk-mac-6.4.2-2024-01-04-a1dd13ee0"
-SDK_PATH="/Users/zengqiuyan/Library/Application Support/Garmin/ConnectIQ/Sdks/connectiq-sdk-mac-8.2.1-2025-06-19-f69b94140"  # 2025.7.1后必须使用8.1+版本
+SDK_PATH="${HOME}/Library/Application Support/Garmin/ConnectIQ/Sdks/connectiq-sdk-mac-8.4.0-2025-12-03-5122605dc"  # 2025.7.1后必须使用8.1+版本
 API_DB="$SDK_PATH/bin/api.db"
 PROJECT_INFO="$SDK_PATH/bin/projectInfo.xml"
 

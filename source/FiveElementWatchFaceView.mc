@@ -445,6 +445,15 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             // 重新加载设置以确保最新配置生效
             loadSettings();
             
+            // 计算当日五行配色，并根据五行属性更新表盘主色调
+            var dailyColors = calculateDailyFiveElementColors(null);
+            var dayElement = dailyColors.size() > 3 ? dailyColors[3] : 2; // 获取日五行索引
+            
+            // 根据日五行的大吉色（我生者）来设置表盘主色调
+            // 这样表盘背景/刻度颜色会与时针颜色（大吉色）保持一致
+            var mostLuckyElement = (dayElement + 1) % 5;
+            _elementIndex = mostLuckyElement;
+            
             // 获取当前五行配色方案
             var elementColors = getCurrentElementColors();
             
@@ -733,7 +742,7 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
                 // 格式化日期字符串 - 06/29 格式
                 var monthNum = convertMonthToNumber(currentMonth);
                 var dayNum = (currentDay != null && currentDay instanceof Number) ? currentDay : 27;
-                var yearNum = (currentYear != null && currentYear instanceof Number) ? currentYear : 2024;
+                var yearNum = (currentYear != null && currentYear instanceof Number) ? currentYear : getCurrentYear();
                 
                 var monthStr = monthNum < 10 ? "0" + monthNum.toString() : monthNum.toString();
                 var dayStr = dayNum < 10 ? "0" + dayNum.toString() : dayNum.toString();
@@ -1402,12 +1411,53 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
      * 基于天干地支、五行相生相克理论
      * @return 包含最吉、次吉、平吉颜色的数组
      */
-    /**
-     * 将 Garmin 月份枚举或字符串转换为数字
-     * @param monthEnum Gregorian 月份枚举或字符串
-     * @return 月份数字 (1-12)
-     */
-    private function convertMonthToNumber(monthEnum) as Number {
+     /**
+      * 获取动态当前年份，避免硬编码
+      * @return 当前年份
+      */
+     private function getCurrentYear() as Number {
+         var today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
+         var year = today.year;
+         return (year != null && year instanceof Number) ? year : 2026;
+     }
+     
+     /**
+      * 使用蔡勒公式计算任意日期是星期几
+      * @param year 年份
+      * @param month 月份 (1-12)
+      * @param day 日期 (1-31)
+      * @return 星期几 (1=星期日, 2=星期一, ..., 7=星期六)
+      */
+     private function calculateZellerWeekday(year as Number, month as Number, day as Number) as Number {
+         // 蔡勒公式：1月和2月视为上一年的13月和14月
+         var m = month;
+         var y = year;
+         
+         if (m == 1 || m == 2) {
+             m = m + 12;
+             y = y - 1;
+         }
+         
+         var c = y / 100;  // 世纪数
+         var y_mod = y % 100;  // 年份后两位
+         
+         // 蔡勒公式
+         var w = (y_mod + y_mod / 4 + c / 4 - 2 * c + 26 * (m + 1) / 10 + day - 1) % 7;
+         
+         // 转换为我们的格式：1=星期日, 2=星期一, ..., 7=星期六
+         if (w <= 0) {
+             w = w + 7;
+         }
+         
+         return w + 1;  // 调整为1-7范围
+     }
+     
+     /**
+      * 将 Garmin 月份枚举或字符串转换为数字
+      * @param monthEnum Gregorian 月份枚举或字符串
+      * @return 月份数字 (1-12)
+      */
+     private function convertMonthToNumber(monthEnum) as Number {
         if (monthEnum == null) { 
             return 6; 
         }
@@ -1530,12 +1580,16 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
      * @return 星期数字 (1-7, 1=周日)
      */
     private function calculateDayOfWeek(year as Number, month as Number, day as Number) as Number {
-        // 使用基于已知基准日期的相对计算方法
-        // 基准：2025年7月18日是星期五（dayOfWeek = 6）
-        var baseYear = 2025;
-        var baseMonth = 7;
-        var baseDay = 18;
-        var baseDayOfWeek = 6; // 星期五
+        // 使用动态基准日期，避免每年修改
+        var currentYear = getCurrentYear();
+        
+        // 动态计算基准日期：使用当前年份的1月1日
+        var baseYear = currentYear;
+        var baseMonth = 1;
+        var baseDay = 1;
+        
+        // 计算1月1日是星期几（使用蔡勒公式）
+        var baseDayOfWeek = calculateZellerWeekday(baseYear, baseMonth, baseDay);
         
         // 计算目标日期与基准日期的天数差
         var targetDays = calculateDaysSince1900(year, month, day);
@@ -1610,22 +1664,23 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             
             
             // 安全转换为数字类型
-            var yearNum = (year != null && year instanceof Number) ? year : 2025;
+            var yearNum = (year != null && year instanceof Number) ? year : getCurrentYear();
             var monthNum = convertMonthToNumber(month);
             var dayNum = (day != null && day instanceof Number) ? day : 29;
             
+            // 使用精确的儒略日算法计算日干支
+            var jd = getJulianDay(yearNum, monthNum, dayNum);
             
-            // 修正的传统五行纳甲算法 - 基于天干地支计算日五行
-            // 1. 计算年天干：(年份-4) % 10
-            var yearTianGan = (yearNum - 4) % 10;
+            // 修正值 +18 是基于 2026-01-02 (乙巳, JD 2461043) 推算得出的
+            // JD 2461043 % 60 = 23
+            // 乙巳 = 41
+            // (23 + 18) % 60 = 41
+            var ganZhiIndex = (jd + 18) % 60;
+            if (ganZhiIndex < 0) {
+                ganZhiIndex += 60;
+            }
             
-            // 2. 计算年地支：(年份-4) % 12
-            var yearDiZhi = (yearNum - 4) % 12;
-            
-            // 3. 计算日天干地支（简化算法）
-            var dayOfYear = getDayOfYear(monthNum, dayNum, yearNum);
-            var dayTianGan = (yearTianGan * 5 + monthNum * 2 + dayNum) % 10;
-            var dayDiZhi = (dayOfYear + yearDiZhi) % 12;
+            var dayDiZhi = ganZhiIndex % 12;
             
             // 5. 根据日地支确定日五行
             // 地支五行对应：子亥水，寅卯木，巳午火，申酉金，辰戌丑未土
@@ -1643,13 +1698,12 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             }
             
             // 6. 根据五行相生理论计算配色
-            // 五行相生：木生火，火生土，土生金，金生水，水生木
-            // 大吉色：日五行所生的五行（火生土，所以火日大吉为土-黄色）
-            // 次吉色：与日五行相同的五行
-            // 平平色：克日五行的五行（水克火，所以火日平平为水-黑色）
-            var mostLucky = (dayElement + 1) % 5;        // 大吉：日五行生的五行
-            var secondLucky = dayElement;                // 次吉：日五行本身
-            var normalLucky = (dayElement + 3) % 5;      // 平平：克日五行的五行
+            // 大吉：生我者（印）。火日，木（绿）生火。
+            // 次吉：克我者（官杀）。火日，水（黑）克火。（参考用户提供的截图逻辑：黑为次吉）
+            // 平平：我生者（食伤）。火日，火生土（黄）。
+            var mostLucky = (dayElement + 4) % 5;        // 大吉：生我者
+            var secondLucky = (dayElement + 3) % 5;      // 次吉：克我者
+            var normalLucky = (dayElement + 1) % 5;      // 平平：我生者
             
             // 7. 定义五行颜色映射
             var elementColorMap = [
@@ -1672,11 +1726,12 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             // 定义五行对应的中文颜色描述
             var elementColorNames = ["绿色", "红色", "黄色", "白色", "黑色"];
             
-            
-            return colors;
+            // 返回包含日五行索引的数组，以便更新界面
+            // [大吉色, 次吉色, 平平色, 日五行索引]
+            return [colors[0], colors[1], colors[2], dayElement];
         } catch (ex) {
-            // 默认返回黄红黑配色（2025年6月29日的正确配色）
-            return [0xFFFF00, 0xFF0000, 0x000000];
+            // 默认返回黄红黑配色（2025年6月29日的正确配色），日五行默认为2(土)
+            return [0xFFFF00, 0xFF0000, 0x000000, 2];
         }
     }
     
@@ -1916,7 +1971,8 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
         var baseDay = 30;
         var baseJulianDay = getJulianDay(baseYear, baseMonth, baseDay);
         var targetJulianDay = getJulianDay(year, month, day);
-        var offset = targetJulianDay - baseJulianDay;
+        // 修正农历日期计算偏差，减去1天
+        var offset = targetJulianDay - baseJulianDay - 1;
         
         if (offset < 0) {
             return getSimpleLunarResult(year, month, day);
