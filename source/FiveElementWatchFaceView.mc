@@ -449,9 +449,9 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
             var dailyColors = calculateDailyFiveElementColors(null);
             var dayElement = dailyColors.size() > 3 ? dailyColors[3] : 2; // 获取日五行索引
             
-            // 根据日五行的大吉色（我生者）来设置表盘主色调
+            // 根据日五行的大吉色（生我者）来设置表盘主色调
             // 这样表盘背景/刻度颜色会与时针颜色（大吉色）保持一致
-            var mostLuckyElement = (dayElement + 1) % 5;
+            var mostLuckyElement = (dayElement + 4) % 5;
             _elementIndex = mostLuckyElement;
             
             // 获取当前五行配色方案
@@ -1650,89 +1650,15 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
      * @param today 日期信息对象，如果为null则使用当前日期
      * @return 包含时针、分针、秒针颜色的数组 [大吉色, 次吉色, 平平色]
      */
+    /**
+     * 计算每日五行配色
+     * 使用 FiveElementUtil 统一算法
+     */
     private function calculateDailyFiveElementColors(today) as Array {
-        try {
-            // 如果没有传入日期参数，则使用当前日期
-            if (today == null) {
-                today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
-            }
-            
-            // 获取当前日期
-            var year = today.year;
-            var month = today.month;
-            var day = today.day;
-            
-            
-            // 安全转换为数字类型
-            var yearNum = (year != null && year instanceof Number) ? year : getCurrentYear();
-            var monthNum = convertMonthToNumber(month);
-            var dayNum = (day != null && day instanceof Number) ? day : 29;
-            
-            // 使用精确的儒略日算法计算日干支
-            var jd = getJulianDay(yearNum, monthNum, dayNum);
-            
-            // 修正值 +18 是基于 2026-01-02 (乙巳, JD 2461043) 推算得出的
-            // JD 2461043 % 60 = 23
-            // 乙巳 = 41
-            // (23 + 18) % 60 = 41
-            var ganZhiIndex = (jd + 18) % 60;
-            if (ganZhiIndex < 0) {
-                ganZhiIndex += 60;
-            }
-            
-            var dayDiZhi = ganZhiIndex % 12;
-            
-            // 5. 根据日地支确定日五行
-            // 地支五行对应：子亥水，寅卯木，巳午火，申酉金，辰戌丑未土
-            var dayElement;
-            if (dayDiZhi == 0 || dayDiZhi == 11) {      // 子、亥 - 水
-                dayElement = 4; // 水
-            } else if (dayDiZhi == 2 || dayDiZhi == 3) { // 寅、卯 - 木
-                dayElement = 0; // 木
-            } else if (dayDiZhi == 5 || dayDiZhi == 6) { // 巳、午 - 火
-                dayElement = 1; // 火
-            } else if (dayDiZhi == 8 || dayDiZhi == 9) { // 申、酉 - 金
-                dayElement = 3; // 金
-            } else {                                      // 辰、戌、丑、未 - 土
-                dayElement = 2; // 土
-            }
-            
-            // 6. 根据五行相生理论计算配色
-            // 大吉：生我者（印）。火日，木（绿）生火。
-            // 次吉：克我者（官杀）。火日，水（黑）克火。（参考用户提供的截图逻辑：黑为次吉）
-            // 平平：我生者（食伤）。火日，火生土（黄）。
-            var mostLucky = (dayElement + 4) % 5;        // 大吉：生我者
-            var secondLucky = (dayElement + 3) % 5;      // 次吉：克我者
-            var normalLucky = (dayElement + 1) % 5;      // 平平：我生者
-            
-            // 7. 定义五行颜色映射
-            var elementColorMap = [
-                0x00FF00,  // 木 - 绿色
-                0xFF0000,  // 火 - 红色
-                0xFFFF00,  // 土 - 黄色
-                0xFFFFFF,  // 金 - 白色
-                0x000000   // 水 - 纯黑色（有白色边框，无需担心与背景重叠）
-            ];
-            
-            var colors = [
-                elementColorMap[mostLucky],    // 时针颜色（大吉）
-                elementColorMap[secondLucky],  // 分针颜色（次吉）
-                elementColorMap[normalLucky]   // 秒针颜色（平平）
-            ];
-            
-            var elementNames = ["木", "火", "土", "金", "水"];
-            var diZhiNames = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
-            
-            // 定义五行对应的中文颜色描述
-            var elementColorNames = ["绿色", "红色", "黄色", "白色", "黑色"];
-            
-            // 返回包含日五行索引的数组，以便更新界面
-            // [大吉色, 次吉色, 平平色, 日五行索引]
-            return [colors[0], colors[1], colors[2], dayElement];
-        } catch (ex) {
-            // 默认返回黄红黑配色（2025年6月29日的正确配色），日五行默认为2(土)
-            return [0xFFFF00, 0xFF0000, 0x000000, 2];
-        }
+        var colors = FiveElementUtil.calculateColors(today);
+        // 转换月份参数以兼容旧代码 (如果 FiveElementUtil 未处理)
+        // 但由于我们已经封装了逻辑，这里直接返回即可
+        return colors;
     }
     
     /**
@@ -1872,20 +1798,22 @@ class FiveElementWatchFaceView extends WatchUi.WatchFace {
      * 计算儒略日数 - 基于6tail/lunar标准算法
      * 参考6tail/lunar-javascript项目的实现
      */
+    // 该函数已移至 FiveElementUtil，为了兼容性保留调用接口，或直接删除如果不再使用
+    // 但鉴于 FiveElementUtil.mc 已经包含此逻辑，我们在这里可以移除它
+    // 不过考虑到这是 View 类，可能不直接调用 Util 的 private 方法（虽然这里是 Util static）
+    // 所以，我们删除本地的 getJulianDay 实现，转而使用 Util 的，或者直接移除如果 View 中其他地方没用到。
+    // 搜索发现 View 中没有其他地方显式调用 getJulianDay (除了在被替换的 calculateDailyFiveElementColors 中)
+    // 让我们再检查一下 convertToLunar 是否用到它。
+    
+    /**
+     * 计算儒略日数 (保留用于农历计算，如果需要)
+     * 但 calculateDailyFiveElementColors 已经不再使用它
+     * 检查是否有其他依赖... 
+     * 搜索结果显示 getJulianDay 只在 calculateDailyFiveElementColors 和 convertToLunar (可能?) 中使用
+     * 让我们看看 1875 行附近的 getJulianDay 定义
+     */
     private function getJulianDay(year as Number, month as Number, day as Number) as Number {
-        // 标准儒略日计算公式，与6tail/lunar保持一致
-        if (month <= 2) {
-            month += 12;
-            year -= 1;
-        }
-        
-        var a = year / 100;
-        var b = 2 - a + a / 4;
-        
-        // 使用标准的儒略日公式
-        var jd = (365.25 * (year + 4716)).toNumber() + (30.6001 * (month + 1)).toNumber() + day + b - 1524;
-        
-        return jd;
+        return FiveElementUtil.getJulianDay(year, month, day);
     }
     
     /**

@@ -965,7 +965,7 @@ class FR255Renderer {
             var secondAngle = (second * 6) * Math.PI / 180;
             
             // 获取当日五行配色（最吉、次吉、平吉）
-            var dailyColors = calculateFR255DailyFiveElementColors();
+            var dailyColors = calculateFR255DailyFiveElementColors(null);
             // 获取明日五行配色
             var tomorrowColors = getFR255TomorrowFiveElementColors();
             
@@ -1014,65 +1014,12 @@ class FR255Renderer {
     
     /**
      * FR255专用五行配色计算 - 移植自FR965
+     * 使用 FiveElementUtil 统一算法
      */
-    private function calculateFR255DailyFiveElementColors() as Array {
-        try {
-            var today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
-            var year = today.year;
-            var month = today.month;
-            var day = today.day;
-            
-            // 安全转换为数字类型
-            var yearNum = (year != null && year instanceof Number) ? year : getCurrentYear();
-            var monthNum = convertMonthToNumber(month);
-            var dayNum = (day != null && day instanceof Number) ? day : 29;
-            
-            // 修正的传统五行纳甲算法 - 基于天干地支计算日五行
-            var yearTianGan = (yearNum - 4) % 10;
-            var yearDiZhi = (yearNum - 4) % 12;
-            
-            // 计算日天干地支（简化算法）
-            var dayOfYear = getFR255DayOfYear(monthNum, dayNum, yearNum);
-            var dayTianGan = (yearTianGan * 5 + monthNum * 2 + dayNum) % 10;
-            var dayDiZhi = (dayOfYear + yearDiZhi) % 12;
-            
-            // 根据日地支确定日五行
-            var dayElement;
-            if (dayDiZhi == 0 || dayDiZhi == 11) {      // 子、亥 - 水
-                dayElement = 4; // 水
-            } else if (dayDiZhi == 2 || dayDiZhi == 3) { // 寅、卯 - 木
-                dayElement = 0; // 木
-            } else if (dayDiZhi == 5 || dayDiZhi == 6) { // 巳、午 - 火
-                dayElement = 1; // 火
-            } else if (dayDiZhi == 8 || dayDiZhi == 9) { // 申、酉 - 金
-                dayElement = 3; // 金
-            } else {                                      // 辰、戌、丑、未 - 土
-                dayElement = 2; // 土
-            }
-            
-            // 根据五行相生理论计算配色
-            var mostLucky = (dayElement + 1) % 5;        // 大吉：日五行生的五行
-            var secondLucky = dayElement;                // 次吉：日五行本身
-            var normalLucky = (dayElement + 3) % 5;      // 平平：克日五行的五行
-            
-            // 定义五行颜色映射
-            var elementColorMap = [
-                0x00FF00,  // 木 - 绿色
-                0xFF0000,  // 火 - 红色
-                0xFFFF00,  // 土 - 黄色
-                0xFFFFFF,  // 金 - 白色
-                0x000000   // 水 - 纯黑色
-            ];
-            
-            return [
-                elementColorMap[mostLucky],    // 时针颜色（大吉）
-                elementColorMap[secondLucky],  // 分针颜色（次吉）
-                elementColorMap[normalLucky]   // 秒针颜色（平平）
-            ];
-        } catch (ex) {
-            // 默认返回黄红黑配色
-            return [0xFFFF00, 0xFF0000, 0x000000];
-        }
+    private function calculateFR255DailyFiveElementColors(today) as Array {
+        var colors = FiveElementUtil.calculateColors(today);
+        // FR255 只需要前三个颜色
+        return [colors[0], colors[1], colors[2]];
     }
     
     /**
@@ -1084,55 +1031,9 @@ class FR255Renderer {
             var tomorrow = new Time.Moment(Time.now().value() + 24 * 60 * 60);
             var tomorrowInfo = Gregorian.info(tomorrow, Time.FORMAT_MEDIUM);
             
-            var year = tomorrowInfo.year;
-            var month = tomorrowInfo.month;
-            var day = tomorrowInfo.day;
-            
-            // 安全转换为数字类型
-            var yearNum = (year != null && year instanceof Number) ? year : 2025;
-            var monthNum = convertMonthToNumber(month);
-            var dayNum = (day != null && day instanceof Number) ? day : 30;
-            
-            // 使用相同的五行计算逻辑
-            var yearTianGan = (yearNum - 4) % 10;
-            var yearDiZhi = (yearNum - 4) % 12;
-            
-            var dayOfYear = getFR255DayOfYear(monthNum, dayNum, yearNum);
-            var dayTianGan = (yearTianGan * 5 + monthNum * 2 + dayNum) % 10;
-            var dayDiZhi = (dayOfYear + yearDiZhi) % 12;
-            
-            var dayElement;
-            if (dayDiZhi == 0 || dayDiZhi == 11) {
-                dayElement = 4; // 水
-            } else if (dayDiZhi == 2 || dayDiZhi == 3) {
-                dayElement = 0; // 木
-            } else if (dayDiZhi == 5 || dayDiZhi == 6) {
-                dayElement = 1; // 火
-            } else if (dayDiZhi == 8 || dayDiZhi == 9) {
-                dayElement = 3; // 金
-            } else {
-                dayElement = 2; // 土
-            }
-            
-            var mostLucky = (dayElement + 1) % 5;
-            var secondLucky = dayElement;
-            var normalLucky = (dayElement + 3) % 5;
-            
-            var elementColorMap = [
-                0x00FF00,  // 木 - 绿色
-                0xFF0000,  // 火 - 红色
-                0xFFFF00,  // 土 - 黄色
-                0xFFFFFF,  // 金 - 白色
-                0x000000   // 水 - 纯黑色
-            ];
-            
-            return [
-                elementColorMap[mostLucky],
-                elementColorMap[secondLucky],
-                elementColorMap[normalLucky]
-            ];
+            return calculateFR255DailyFiveElementColors(tomorrowInfo);
         } catch (ex) {
-            // 如果出错，返回默认配色
+            // 默认返回黄红黑配色
             return [0xFFFF00, 0xFF0000, 0x000000];
         }
     }
@@ -1374,4 +1275,6 @@ class FR255Renderer {
         dc.setPenWidth(1);
         dc.drawCircle(centerX, centerY, 2);
     }
+
+    // 此函数已移至 FiveElementUtil，可移除
 }

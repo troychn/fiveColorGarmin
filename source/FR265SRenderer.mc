@@ -1385,8 +1385,8 @@ class FR265SRenderer {
         var baseYear = 1900;
         var baseMonth = 1;
         var baseDay = 31;
-        var baseJulianDay = getJulianDay(baseYear, baseMonth, baseDay);
-        var targetJulianDay = getJulianDay(year, month, day);
+        var baseJulianDay = FiveElementUtil.getJulianDay(baseYear, baseMonth, baseDay);
+        var targetJulianDay = FiveElementUtil.getJulianDay(year, month, day);
         var offset = targetJulianDay - baseJulianDay;
         
         if (offset < 0) {
@@ -1479,22 +1479,9 @@ class FR265SRenderer {
         };
     }
     
-    /**
-     * 计算儒略日数
-     */
-    private function getJulianDay(year as Number, month as Number, day as Number) as Number {
-        if (month <= 2) {
-            month += 12;
-            year -= 1;
-        }
-        
-        var a = year / 100;
-        var b = 2 - a + a / 4;
-        
-        var jd = (365.25 * (year + 4716)).toNumber() + (30.6001 * (month + 1)).toNumber() + day + b - 1524;
-        
-        return jd;
-    }
+    // 此函数已移至 FiveElementUtil，可移除
+    // 搜索代码发现 getJulianDay 仅在此处被定义，未被其他函数调用（除了刚被移除的 calculateDailyFiveElementColors）
+    // 因此可以安全移除
     
     /**
      * 计算农历年的总天数
@@ -1614,89 +1601,9 @@ class FR265SRenderer {
      * @return 包含时针、分针、秒针颜色的数组 [大吉色, 次吉色, 平平色]
      */
     private function calculateDailyFiveElementColors(today) as Array {
-        try {
-            // System.println("[FR265S] 开始计算五行配色");
-            
-            // 如果没有传入日期参数，则使用当前日期
-            if (today == null) {
-                today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
-            }
-            
-            // 获取当前日期
-            var year = today.year;
-            var month = today.month;
-            var day = today.day;
-            
-            // 安全转换为数字类型
-            var yearNum = (year != null && year instanceof Number) ? year : 2026;
-            var monthNum = convertMonthToNumber(month);
-            var dayNum = (day != null && day instanceof Number) ? day : 29;
-            
-            System.println("[FR265S] 日期: " + yearNum + "-" + monthNum + "-" + dayNum);
-            
-            // 使用精确的儒略日算法计算日干支
-            var jd = getJulianDay(yearNum, monthNum, dayNum);
-            
-            // 修正值 +18 是基于 2026-01-02 (乙巳, JD 2461043) 推算得出的
-            // JD 2461043 % 60 = 23
-            // 乙巳 = 41
-            // (23 + 18) % 60 = 41
-            var ganZhiIndex = (jd + 18) % 60;
-            if (ganZhiIndex < 0) {
-                ganZhiIndex += 60;
-            }
-            
-            var dayDiZhi = ganZhiIndex % 12;
-            
-            System.println("[FR265S] 日地支: " + dayDiZhi);
-            
-            // 根据日地支确定日五行
-            var dayElement;
-            if (dayDiZhi == 0 || dayDiZhi == 11) {      // 子、亥 - 水
-                dayElement = 4; // 水
-            } else if (dayDiZhi == 2 || dayDiZhi == 3) { // 寅、卯 - 木
-                dayElement = 0; // 木
-            } else if (dayDiZhi == 5 || dayDiZhi == 6) { // 巳、午 - 火
-                dayElement = 1; // 火
-            } else if (dayDiZhi == 8 || dayDiZhi == 9) { // 申、酉 - 金
-                dayElement = 3; // 金
-            } else {                                      // 辰、戌、丑、未 - 土
-                dayElement = 2; // 土
-            }
-            
-            System.println("[FR265S] 日五行: " + dayElement);
-            
-            // 根据五行相生理论计算配色
-            // 大吉：生我者（印）。火日，木（绿）生火。
-            // 次吉：克我者（官杀）。火日，水（黑）克火。
-            // 平平：我生者（食伤）。火日，火生土（黄）。
-            var mostLucky = (dayElement + 4) % 5;        // 大吉：生我者
-            var secondLucky = (dayElement + 3) % 5;      // 次吉：克我者
-            var normalLucky = (dayElement + 1) % 5;      // 平平：我生者
-            
-            // 定义五行颜色映射
-            var elementColorMap = [
-                0x00FF00,  // 木 - 绿色
-                0xFF0000,  // 火 - 红色
-                0xFFFF00,  // 土 - 黄色
-                0xFFFFFF,  // 金 - 白色
-                0x000000   // 水 - 纯黑色
-            ];
-            
-            var colors = [
-                elementColorMap[mostLucky],    // 时针颜色（大吉）
-                elementColorMap[secondLucky],  // 分针颜色（次吉）
-                elementColorMap[normalLucky]   // 秒针颜色（平平）
-            ];
-            
-            // System.println("[FR265S] 五行配色计算完成: [" + colors[0] + ", " + colors[1] + ", " + colors[2] + "]");
-            
-            return colors;
-        } catch (ex) {
-            // System.println("[FR265S] 五行配色计算异常: " + ex.getErrorMessage());
-            // 默认返回黄红黑配色
-            return [0xFFFF00, 0xFF0000, 0x000000];
-        }
+        var colors = FiveElementUtil.calculateColors(today);
+        // FR265S 只需要前三个颜色
+        return [colors[0], colors[1], colors[2]];
     }
     
     /**
