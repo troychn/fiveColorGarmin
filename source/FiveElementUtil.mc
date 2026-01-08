@@ -86,16 +86,17 @@ class FiveElementUtil {
             // 根据五行相生相克理论计算配色
             // 大吉：被日五行生（日生我）。
             // 次吉：与日五行相同。
-            // 平平：克制日五行的颜色（这个颜色克制日五行）。
+            // 平平：克制日五行的颜色（这个颜色主动克制日五行）。
             // 五行相克：木克土、土克水、水克火、火克金、金克木
+            // "克日五行"理解：克制日五行的颜色（木克土，所以木色克制土日）
             var mostLucky = (dayElement + 1) % 5;        // 大吉：被日生
             var secondLucky = dayElement;                // 次吉：同日五行
             var normalLucky = 0;                        // 平平：克日五行
-            if (dayElement == 0) { normalLucky = 2; }   // 木日：木克土 → 土
-            else if (dayElement == 1) { normalLucky = 4; } // 火日：水克火 → 水
-            else if (dayElement == 2) { normalLucky = 4; } // 土日：土克水 → 水
-            else if (dayElement == 3) { normalLucky = 0; } // 金日：金克木 → 木
-            else if (dayElement == 4) { normalLucky = 1; } // 水日：水克火 → 火
+            if (dayElement == 0) { normalLucky = 3; }   // 木日：克木者金 → 金
+            else if (dayElement == 1) { normalLucky = 4; } // 火日：克火者水 → 水
+            else if (dayElement == 2) { normalLucky = 0; } // 土日：克土者木 → 木
+            else if (dayElement == 3) { normalLucky = 1; } // 金日：克金者火 → 火
+            else if (dayElement == 4) { normalLucky = 2; } // 水日：克水者土 → 土
             
             return [
                 ELEMENT_COLOR_MAP[mostLucky],    // 时针颜色（大吉）
